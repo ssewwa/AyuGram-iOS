@@ -1,0 +1,72 @@
+{
+  "fill": "system-light",
+  "groups": [
+    {
+      "blend-mode": "normal",
+      "blur-material": 1,
+      "layers": [
+        {
+          "blend-mode-specializations": [
+            {
+              "value": "normal"
+            },
+            {
+              "appearance": "dark",
+              "value": "normal"
+            }
+          ],
+          "glass": true,
+          "image-name": "Arrow.svg",
+          "name": "Arrow",
+          "fill-specializations": [
+            {
+              "appearance": "dark",
+              "value": {
+                "automatic-gradient": "srgb:0.11765,0.48235,1.00000,1.00000"
+              }
+            }
+          ]
+        },
+        {
+          "blend-mode-specializations": [
+            {
+              "value": "normal"
+            },
+            {
+              "appearance": "dark",
+              "value": "normal"
+            }
+          ],
+          "glass": false,
+          "image-name": "Background.svg",
+          "name": "Background",
+          "hidden-specializations": [
+            {
+              "value": false
+            },
+            {
+              "appearance": "dark",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "lighting": "combined",
+      "shadow": {
+        "kind": "layer-color",
+        "opacity": 1
+      },
+      "specular": true,
+      "translucency": {
+        "enabled": false,
+        "value": 1
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": "shared"
+  }
+}

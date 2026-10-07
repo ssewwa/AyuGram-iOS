@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Ghost</title>
+    <defs><linearGradient id="fg" x1="0%" y1="0%" x2="60%" y2="100%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#E6DCFF"/></linearGradient></defs>
+    <path d="M312,540 C312,380 402,268 512,268 C622,268 712,380 712,540 L712,760 Q690,724 662,744 Q636,764 612,738 Q586,710 562,738 Q538,764 512,740 Q486,716 462,740 Q438,764 412,738 Q388,712 362,742 Q336,768 312,744 Z" fill="url(#fg)"/>
+</svg>

@@ -331,7 +331,26 @@ alternate_icon_folders = [
     "PremiumTurbo",
 ]
 
-composer_icon_folders = ["Telegram"]
+# exteraGram: the primary icon plus Liquid Glass (Icon Composer) alternate icons.
+# Telegram's PNG alternate icons use the Telegram logo and are not shipped.
+composer_icon_folders = [
+    "Telegram",
+    "ExteraBlack",
+    "ExteraWhite",
+    "ExteraSunset",
+    "ExteraOcean",
+    "ExteraMidnight",
+    "ExteraGold",
+    "ExteraMint",
+    "AyuGhost",
+]
+
+filegroup(
+    name = "ExteraIconPreviews",
+    srcs = glob([
+        "Telegram-iOS/IconPreviews/*.png",
+    ]),
+)
 
 [
     filegroup(
@@ -1780,11 +1799,10 @@ ios_application(
         ":UrlTypesInfoPlist",
     ],
     app_icons = [ ":{}_icon".format(name) for name in composer_icon_folders ],
-    alternate_icons = [
-        ":{}".format(name) for name in alternate_icon_folders
-    ],
+    primary_app_icon = "Telegram",
     resources = [
         ":LaunchScreen",
+        ":ExteraIconPreviews",
         #":DefaultAppIcon",
     ],
     frameworks = [

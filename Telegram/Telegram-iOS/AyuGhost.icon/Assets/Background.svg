@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Background</title>
+    <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8E2DE2"/><stop offset="100%" stop-color="#4A00E0"/></linearGradient></defs>
+    <rect x="0" y="0" width="1024" height="1024" fill="url(#bg)"/>
+</svg>
