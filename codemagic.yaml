@@ -5,6 +5,12 @@
 #   telegram_api : TG_API_ID, TG_API_HASH            (from https://my.telegram.org/apps, a separate key for iOS)
 
 definitions:
+  # Bazel's disk cache is tens of thousands of small files; Codemagic needs ~13 min to archive
+  # them. We pack it into one zstd file ourselves (~1 min) and let Codemagic cache that file.
+  # Codemagic keeps the cache only from successful builds, for 14 days, max 3 GB per workflow.
+  cache: &cache
+    cache_paths:
+      - $HOME/bazel-cache-archive
   env: &env
     xcode: 26.2            # must match "xcode" in versions.json
     groups:
@@ -21,6 +27,32 @@ definitions:
         # TDLib's CMake picks up Homebrew's ccache, but Bazel's sandbox PATH can't run it
         brew uninstall --ignore-dependencies ccache 2>/dev/null || true
         if command -v ccache >/dev/null; then sudo rm -f "$(command -v ccache)"; fi
+    - &restore_cache
+      name: Restore Bazel cache
+      script: |
+        brew list zstd >/dev/null 2>&1 || brew install zstd
+        ARCHIVE="$HOME/bazel-cache-archive/cache.tar.zst"
+        if [ -f "$ARCHIVE" ]; then
+          echo "Restoring $(du -h "$ARCHIVE" | cut -f1) Bazel cache"
+          time (zstd -d -T0 -c "$ARCHIVE" | tar -xf - -C "$HOME")
+          du -sh "$HOME/telegram-bazel-cache" || true
+        else
+          echo "No Bazel cache yet, full build"
+        fi
+    - &pack_cache
+      name: Pack Bazel cache
+      script: |
+        mkdir -p "$HOME/bazel-cache-archive"
+        ARCHIVE="$HOME/bazel-cache-archive/cache.tar.zst"
+        du -sh "$HOME/telegram-bazel-cache" || true
+        time (tar -cf - -C "$HOME" telegram-bazel-cache | zstd -T0 -3 -q -f -o "$ARCHIVE")
+        SIZE_MB=$(( $(stat -f%z "$ARCHIVE") / 1024 / 1024 ))
+        echo "Cache archive: ${SIZE_MB} MB"
+        # stay under Codemagic's 3 GB limit; start over when the cache grows too big
+        if [ "$SIZE_MB" -gt 2800 ]; then
+          echo "Too big, dropping the cache"
+          rm -f "$ARCHIVE"
+        fi
     - &config
       name: Generate build configuration
       script: |
@@ -51,9 +83,11 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment: *env
+    cache: *cache
     scripts:
       - *submodules
       - *metal
+      - *restore_cache
       - *config
       - name: Build IPA
         script: |
@@ -69,6 +103,7 @@ workflows:
             --buildNumber="$BUILD_NUMBER" \
             --outputBuildArtifactsPath=build/artifacts
           mv build/artifacts/Telegram.ipa "build/artifacts/AyuGram-$BUILD_NUMBER.ipa"
+      - *pack_cache
     artifacts:
       - build/artifacts/*.ipa
       - build/artifacts/Telegram.DSYMs.zip
@@ -79,9 +114,11 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment: *env
+    cache: *cache
     scripts:
       - *submodules
       - *metal
+      - *restore_cache
       - *config
       - name: Build for simulator
         script: |
@@ -98,5 +135,6 @@ workflows:
           mkdir -p build/sim && cd build/sim
           unzip -q -o ../../bazel-bin/Telegram/Telegram.ipa
           cd Payload && zip -qry "../../AyuGram-sim-$BUILD_NUMBER.zip" Telegram.app
+      - *pack_cache
     artifacts:
       - build/AyuGram-sim-*.zip
