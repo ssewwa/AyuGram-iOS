@@ -1241,6 +1241,14 @@ final class PeerInfoHeaderNode: ASDisplayNode {
                 if let mainUsername = user.addressName, !mainUsername.isEmpty {
                     subtitle = "\(subtitle) • @\(mainUsername)"
                 }
+                // exteraGram: hidePhoneNumber
+                if ExteraSettings.hidePhoneNumber {
+                    if let mainUsername = user.addressName, !mainUsername.isEmpty {
+                        subtitle = "@\(mainUsername)"
+                    } else {
+                        subtitle = "Номер скрыт"
+                    }
+                }
                 subtitleStringText = subtitle
                 subtitleAttributes = MultiScaleTextState.Attributes(font: Font.regular(17.0), color: .white)
                 smallSubtitleAttributes = MultiScaleTextState.Attributes(font: Font.regular(16.0), color: .white, shadowColor: titleShadowColor)

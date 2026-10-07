@@ -903,6 +903,20 @@ func infoItems(
         }
     }
     
+    // exteraGram: showIdAndDc
+    if ExteraSettings.showIdAndDc, let peer = data.peer {
+        let peerIdText = exteraBotApiPeerId(peer.id)
+        var idText = peerIdText
+        if let resource = peer.smallProfileImage?.resource as? CloudPeerPhotoSizeMediaResource {
+            idText += " · DC \(resource.datacenterId)"
+        }
+        items[.peerInfoTrailing]!.append(PeerInfoScreenLabeledValueItem(id: 90000, label: "ID", text: idText, action: { _, _ in
+            UIPasteboard.general.string = peerIdText
+        }, requestLayout: { animated in
+            interaction.requestLayout(animated)
+        }))
+    }
+    
     var result: [(AnyHashable, [PeerInfoScreenItem])] = []
     for section in InfoSection.allCases {
         if let sectionItems = items[section], !sectionItems.isEmpty {

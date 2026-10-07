@@ -184,6 +184,7 @@ enum PeerInfoSettingsSection {
     case profileColor
     case powerSaving
     case ayugram
+    case exteragram
     case businessSetup
     case profile
     case premiumManagement

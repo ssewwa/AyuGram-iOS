@@ -293,7 +293,8 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
         switch self.location {
         case let .chatList(groupId):
             if groupId == .root {
-                title = self.presentationData.strings.DialogList_Title
+                // exteraGram: custom title
+                title = ExteraSettings.titleText.isEmpty ? self.presentationData.strings.DialogList_Title : ExteraSettings.titleText
             } else {
                 title = self.presentationData.strings.ChatList_ArchivedChatsTitle
             }
@@ -7153,7 +7154,8 @@ private final class ChatListLocationContext {
         switch location {
         case let .chatList(groupId):
             if groupId == .root {
-                defaultTitle = presentationData.strings.DialogList_Title
+                // exteraGram: custom title
+                defaultTitle = ExteraSettings.titleText.isEmpty ? presentationData.strings.DialogList_Title : ExteraSettings.titleText
             } else {
                 defaultTitle = presentationData.strings.ChatList_ArchivedChatsTitle
             }

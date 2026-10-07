@@ -273,6 +273,8 @@ extension PeerInfoScreenNode {
             push(energySavingSettingsScreen(context: self.context))
         case .ayugram:
             push(ayuGramSettingsController(context: self.context))
+        case .exteragram:
+            push(exteraGramSettingsController(context: self.context))
         case .businessSetup:
             guard let controller = self.controller, !controller.presentAccountFrozenInfoIfNeeded() else {
                 return

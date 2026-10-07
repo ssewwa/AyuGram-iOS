@@ -9,7 +9,6 @@ import PresentationDataUtils
 import AccountContext
 
 // AyuGram settings screen. Counterpart of AyuGramPreferencesActivity on Android.
-// TODO: move strings to the localization files.
 private final class AyuGramSettingsControllerArguments {
     let updateGhostMode: (Bool) -> Void
     let updateSendRead: (Bool) -> Void
@@ -101,41 +100,41 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
         let arguments = arguments as! AyuGramSettingsControllerArguments
         switch self {
         case .ghostHeader:
-            return ItemListSectionHeaderItem(presentationData: presentationData, text: "GHOST MODE", sectionId: self.section)
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "РЕЖИМ ПРИЗРАКА", sectionId: self.section)
         case let .ghostMode(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Ghost Mode", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Режим призрака", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateGhostMode(value)
             })
         case let .sendRead(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Send Read Status", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Отправлять «прочитано»", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateSendRead(value)
             })
         case let .sendOnline(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Send Online Status", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Отправлять «в сети»", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateSendOnline(value)
             })
         case let .sendTyping(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Send Typing Status", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Отправлять «печатает»", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateSendTyping(value)
             })
         case let .offlineAfterSend(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Go Offline After Sending", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Офлайн после отправки", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateOfflineAfterSend(value)
             })
         case let .readAfterSend(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Read Chat After Replying", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Прочитать чат после ответа", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateReadAfterSend(value)
             })
         case .ghostFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Ghost Mode turns off read, online and typing statuses. Telegram marks you online when you send a message, \"Go Offline After Sending\" switches you back right away. \"Read Chat After Replying\" marks the chat as read when you reply while read status is off."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Режим призрака отключает «прочитано», «в сети» и «печатает». Telegram показывает тебя в сети, когда ты отправляешь сообщение, — «Офлайн после отправки» сразу возвращает статус обратно. «Прочитать чат после ответа» отмечает чат прочитанным, когда ты отвечаешь."), sectionId: self.section)
         case .historyHeader:
-            return ItemListSectionHeaderItem(presentationData: presentationData, text: "MESSAGE HISTORY", sectionId: self.section)
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ИСТОРИЯ СООБЩЕНИЙ", sectionId: self.section)
         case let .saveDeleted(value):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Save Deleted Messages", value: value, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Сохранять удалённые", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateSaveDeleted(value)
             })
         case .historyFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Messages deleted by others stay in the chat, marked with \(AyuSettings.deletedMark). Saved only on this device."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Сообщения, которые удалил собеседник, остаются в чате с пометкой \(AyuSettings.deletedMark). Хранятся только на этом устройстве."), sectionId: self.section)
         }
     }
 }

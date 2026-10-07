@@ -17,6 +17,7 @@ enum SettingsSection: Int, CaseIterable {
     case edit
     case phone
     case accounts
+    case clients
     case myProfile
     case proxy
     case apps
@@ -147,6 +148,14 @@ func settingsItems(data: PeerInfoScreenData?, context: AccountContext, presentat
             }))
         }
         
+        // exteraGram + AyuGram, right at the top
+        items[.clients]!.append(PeerInfoScreenDisclosureItem(id: 0, text: "exteraGram", icon: PresentationResourcesSettings.appearance, action: {
+            interaction.openSettings(.exteragram)
+        }))
+        items[.clients]!.append(PeerInfoScreenDisclosureItem(id: 1, label: .text(AyuSettings.isGhostModeActive ? "Призрак" : ""), text: "AyuGram", icon: PresentationResourcesSettings.security, action: {
+            interaction.openSettings(.ayugram)
+        }))
+        
         items[.myProfile]!.append(PeerInfoScreenDisclosureItem(id: 0, text: presentationData.strings.Settings_MyProfile, icon: PresentationResourcesSettings.myProfile, action: {
             interaction.openSettings(.profile)
         }))
@@ -243,11 +252,7 @@ func settingsItems(data: PeerInfoScreenData?, context: AccountContext, presentat
     items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 6, label: .text(data.isPowerSavingEnabled == true ? presentationData.strings.Settings_PowerSavingOn : presentationData.strings.Settings_PowerSavingOff), text: presentationData.strings.Settings_PowerSaving, icon: PresentationResourcesSettings.powerSaving, action: {
         interaction.openSettings(.powerSaving)
     }))
-    
-    // AyuGram
-    items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 50, label: .text(AyuSettings.isGhostModeActive ? "Ghost" : ""), text: "AyuGram", icon: PresentationResourcesSettings.security, action: {
-        interaction.openSettings(.ayugram)
-    }))
+
     
     let languageName = presentationData.strings.primaryComponent.localizedName
     items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 4, label: .text(languageName.isEmpty ? presentationData.strings.Localization_LanguageName : languageName), text: presentationData.strings.Settings_AppLanguage, icon: PresentationResourcesSettings.language, action: {
@@ -449,7 +454,7 @@ func settingsEditingItems(data: PeerInfoScreenData?, state: PeerInfoState, conte
     }
     
     if case let .user(user) = data.peer {
-        items[.info]!.append(PeerInfoScreenDisclosureItem(id: ItemPhoneNumber, label: .text(user.phone.flatMap({ formatPhoneNumber(context: context, number: $0) }) ?? ""), text: presentationData.strings.Settings_PhoneNumber, icon: PresentationResourcesSettings.recentCalls, action: {
+        items[.info]!.append(PeerInfoScreenDisclosureItem(id: ItemPhoneNumber, label: .text(ExteraSettings.hidePhoneNumber ? "Скрыт" : (user.phone.flatMap({ formatPhoneNumber(context: context, number: $0) }) ?? "")), text: presentationData.strings.Settings_PhoneNumber, icon: PresentationResourcesSettings.recentCalls, action: {
             interaction.openSettings(.phoneNumber)
         }))
     }
