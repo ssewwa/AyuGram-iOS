@@ -3,11 +3,13 @@
 #
 # Environment variable groups to create in Codemagic (App settings → Environment variables):
 #   telegram_api : TG_API_ID, TG_API_HASH            (from https://my.telegram.org/apps, a separate key for iOS)
+#   codemagic_api: CM_API_TOKEN                      (Codemagic API token, used to refresh the build cache)
 
 definitions:
   # Bazel's disk cache is tens of thousands of small files; Codemagic needs ~13 min to archive
   # them. We pack it into one zstd file ourselves (~1 min) and let Codemagic cache that file.
-  # Codemagic keeps the cache only from successful builds, for 14 days, max 3 GB per workflow.
+  # Codemagic keeps the cache only from successful builds, for 14 days, max 3 GB per workflow,
+  # and never overwrites an existing cache, so "Pack Bazel cache" deletes the old one first.
   cache: &cache
     cache_paths:
       - $HOME/bazel-cache-archive
@@ -15,6 +17,7 @@ definitions:
     xcode: 26.2            # must match "xcode" in versions.json
     groups:
       - telegram_api
+      - codemagic_api
   scripts:
     - &submodules
       name: Fetch submodules
@@ -52,6 +55,14 @@ definitions:
         if [ "$SIZE_MB" -gt 2800 ]; then
           echo "Too big, dropping the cache"
           rm -f "$ARCHIVE"
+        fi
+        # Codemagic skips saving when a cache already exists: remove the old one so this build's is kept
+        if [ -n "${CM_API_TOKEN:-}" ]; then
+          APP_ID="${CM_PROJECT_ID:-6ac5d8d3276a02cb991e88a0}"
+          for CACHE_ID in $(curl -sS -H "x-auth-token: $CM_API_TOKEN" "https://api.codemagic.io/apps/$APP_ID/caches" | python3 -c 'import json,sys; print(" ".join(c["_id"] for c in json.load(sys.stdin).get("caches", [])))'); do
+            curl -sS -o /dev/null -w "Deleted old cache $CACHE_ID: HTTP %{http_code}\n" -X DELETE -H "x-auth-token: $CM_API_TOKEN" "https://api.codemagic.io/apps/$APP_ID/caches/$CACHE_ID"
+          done
+          sleep 20 # deletion is asynchronous
         fi
     - &config
       name: Generate build configuration
