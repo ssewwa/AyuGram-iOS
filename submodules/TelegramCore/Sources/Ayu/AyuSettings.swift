@@ -40,6 +40,11 @@ public final class AyuSettings {
         set { self.set(newValue, "sendOfflinePacketAfterOnline") }
     }
 
+    public static var markReadAfterSend: Bool {
+        get { return self.bool("markReadAfterSend", true) }
+        set { self.set(newValue, "markReadAfterSend") }
+    }
+
     // MARK: Message history
 
     public static var saveDeletedMessages: Bool {

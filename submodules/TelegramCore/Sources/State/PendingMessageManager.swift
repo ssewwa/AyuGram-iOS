@@ -2346,6 +2346,7 @@ public final class PendingMessageManager {
         }
         
         let queue = self.queue
+        let network = self.network
         return applyUpdateMessage(postbox: postbox, stateManager: stateManager, message: message, cacheReferenceKey: content.cacheReferenceKey, result: result, accountPeerId: self.accountPeerId, pendingMessageEvent: { [weak self] pendingMessageDelivered in
             queue.async {
                 if let strongSelf = self {
@@ -2357,6 +2358,10 @@ public final class PendingMessageManager {
                 }
             }
         })
+        |> afterCompleted {
+            // AyuGram: mark the chat as read after replying in ghost mode
+            ayuMarkReadAfterSendIfNeeded(postbox: postbox, network: network, stateManager: stateManager, peerId: message.id.peerId)
+        }
     }
     
     private func applySentGroupMessages(postbox: Postbox, stateManager: AccountStateManager, messages: [Message], result: Api.Updates) -> Signal<Void, NoError> {
@@ -2394,6 +2399,7 @@ public final class PendingMessageManager {
             }
         }
         let queue = self.queue
+        let network = self.network
         
         return applyUpdateGroupMessages(postbox: postbox, stateManager: stateManager, messages: messages, result: result, pendingMessageEvents: { [weak self] pendingMessagesDelivered in
             queue.async {
@@ -2406,6 +2412,12 @@ public final class PendingMessageManager {
                 }
             }
         })
+        |> afterCompleted {
+            // AyuGram: mark the chat as read after replying in ghost mode
+            if let message = messages.first {
+                ayuMarkReadAfterSendIfNeeded(postbox: postbox, network: network, stateManager: stateManager, peerId: message.id.peerId)
+            }
+        }
     }
     
     public func deliveredMessageEvents(peerId: PeerId) -> Signal<[PeerPendingMessageDelivered], NoError> {

@@ -16,6 +16,7 @@ private final class AyuGramSettingsControllerArguments {
     let updateSendOnline: (Bool) -> Void
     let updateSendTyping: (Bool) -> Void
     let updateOfflineAfterSend: (Bool) -> Void
+    let updateReadAfterSend: (Bool) -> Void
     let updateSaveDeleted: (Bool) -> Void
 
     init(
@@ -24,6 +25,7 @@ private final class AyuGramSettingsControllerArguments {
         updateSendOnline: @escaping (Bool) -> Void,
         updateSendTyping: @escaping (Bool) -> Void,
         updateOfflineAfterSend: @escaping (Bool) -> Void,
+        updateReadAfterSend: @escaping (Bool) -> Void,
         updateSaveDeleted: @escaping (Bool) -> Void
     ) {
         self.updateGhostMode = updateGhostMode
@@ -31,6 +33,7 @@ private final class AyuGramSettingsControllerArguments {
         self.updateSendOnline = updateSendOnline
         self.updateSendTyping = updateSendTyping
         self.updateOfflineAfterSend = updateOfflineAfterSend
+        self.updateReadAfterSend = updateReadAfterSend
         self.updateSaveDeleted = updateSaveDeleted
     }
 }
@@ -47,6 +50,7 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
     case sendOnline(Bool)
     case sendTyping(Bool)
     case offlineAfterSend(Bool)
+    case readAfterSend(Bool)
     case ghostFooter
 
     case historyHeader
@@ -55,7 +59,7 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
 
     var section: ItemListSectionId {
         switch self {
-        case .ghostHeader, .ghostMode, .sendRead, .sendOnline, .sendTyping, .offlineAfterSend, .ghostFooter:
+        case .ghostHeader, .ghostMode, .sendRead, .sendOnline, .sendTyping, .offlineAfterSend, .readAfterSend, .ghostFooter:
             return AyuGramSettingsSection.ghost.rawValue
         case .historyHeader, .saveDeleted, .historyFooter:
             return AyuGramSettingsSection.history.rawValue
@@ -76,14 +80,16 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
             return 4
         case .offlineAfterSend:
             return 5
-        case .ghostFooter:
+        case .readAfterSend:
             return 6
-        case .historyHeader:
+        case .ghostFooter:
             return 7
-        case .saveDeleted:
+        case .historyHeader:
             return 8
-        case .historyFooter:
+        case .saveDeleted:
             return 9
+        case .historyFooter:
+            return 10
         }
     }
 
@@ -116,8 +122,12 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
             return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Go Offline After Sending", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateOfflineAfterSend(value)
             })
+        case let .readAfterSend(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Read Chat After Replying", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateReadAfterSend(value)
+            })
         case .ghostFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Ghost Mode turns off read, online and typing statuses. Telegram marks you online when you send a message, \"Go Offline After Sending\" switches you back right away."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Ghost Mode turns off read, online and typing statuses. Telegram marks you online when you send a message, \"Go Offline After Sending\" switches you back right away. \"Read Chat After Replying\" marks the chat as read when you reply while read status is off."), sectionId: self.section)
         case .historyHeader:
             return ItemListSectionHeaderItem(presentationData: presentationData, text: "MESSAGE HISTORY", sectionId: self.section)
         case let .saveDeleted(value):
@@ -139,6 +149,7 @@ private func ayuGramSettingsControllerEntries() -> [AyuGramSettingsControllerEnt
     entries.append(.sendOnline(AyuSettings.sendOnlinePackets))
     entries.append(.sendTyping(AyuSettings.sendUploadProgress))
     entries.append(.offlineAfterSend(AyuSettings.sendOfflinePacketAfterOnline))
+    entries.append(.readAfterSend(AyuSettings.markReadAfterSend))
     entries.append(.ghostFooter)
 
     entries.append(.historyHeader)
@@ -174,6 +185,10 @@ public func ayuGramSettingsController(context: AccountContext) -> ViewController
         },
         updateOfflineAfterSend: { value in
             AyuSettings.sendOfflinePacketAfterOnline = value
+            refresh()
+        },
+        updateReadAfterSend: { value in
+            AyuSettings.markReadAfterSend = value
             refresh()
         },
         updateSaveDeleted: { value in
