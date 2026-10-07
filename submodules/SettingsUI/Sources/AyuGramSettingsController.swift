@@ -16,6 +16,7 @@ private final class AyuGramSettingsControllerArguments {
     let updateSendTyping: (Bool) -> Void
     let updateOfflineAfterSend: (Bool) -> Void
     let updateReadAfterSend: (Bool) -> Void
+    let updateLiveActivity: (Bool) -> Void
     let updateSaveDeleted: (Bool) -> Void
 
     init(
@@ -25,6 +26,7 @@ private final class AyuGramSettingsControllerArguments {
         updateSendTyping: @escaping (Bool) -> Void,
         updateOfflineAfterSend: @escaping (Bool) -> Void,
         updateReadAfterSend: @escaping (Bool) -> Void,
+        updateLiveActivity: @escaping (Bool) -> Void,
         updateSaveDeleted: @escaping (Bool) -> Void
     ) {
         self.updateGhostMode = updateGhostMode
@@ -33,6 +35,7 @@ private final class AyuGramSettingsControllerArguments {
         self.updateSendTyping = updateSendTyping
         self.updateOfflineAfterSend = updateOfflineAfterSend
         self.updateReadAfterSend = updateReadAfterSend
+        self.updateLiveActivity = updateLiveActivity
         self.updateSaveDeleted = updateSaveDeleted
     }
 }
@@ -50,6 +53,7 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
     case sendTyping(Bool)
     case offlineAfterSend(Bool)
     case readAfterSend(Bool)
+    case liveActivity(Bool)
     case ghostFooter
 
     case historyHeader
@@ -58,7 +62,7 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
 
     var section: ItemListSectionId {
         switch self {
-        case .ghostHeader, .ghostMode, .sendRead, .sendOnline, .sendTyping, .offlineAfterSend, .readAfterSend, .ghostFooter:
+        case .ghostHeader, .ghostMode, .sendRead, .sendOnline, .sendTyping, .offlineAfterSend, .readAfterSend, .liveActivity, .ghostFooter:
             return AyuGramSettingsSection.ghost.rawValue
         case .historyHeader, .saveDeleted, .historyFooter:
             return AyuGramSettingsSection.history.rawValue
@@ -81,14 +85,16 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
             return 5
         case .readAfterSend:
             return 6
-        case .ghostFooter:
+        case .liveActivity:
             return 7
-        case .historyHeader:
+        case .ghostFooter:
             return 8
-        case .saveDeleted:
+        case .historyHeader:
             return 9
-        case .historyFooter:
+        case .saveDeleted:
             return 10
+        case .historyFooter:
+            return 11
         }
     }
 
@@ -125,8 +131,12 @@ private enum AyuGramSettingsControllerEntry: ItemListNodeEntry {
             return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Прочитать чат после ответа", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateReadAfterSend(value)
             })
+        case let .liveActivity(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Значок в Dynamic Island", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateLiveActivity(value)
+            })
         case .ghostFooter:
-            return ItemListTextItem(presentationData: presentationData, text: .plain("Режим призрака отключает «прочитано», «в сети» и «печатает». Telegram показывает тебя в сети, когда ты отправляешь сообщение, — «Офлайн после отправки» сразу возвращает статус обратно. «Прочитать чат после ответа» отмечает чат прочитанным, когда ты отвечаешь."), sectionId: self.section)
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Режим призрака отключает «прочитано», «в сети» и «печатает». Telegram показывает тебя в сети, когда ты отправляешь сообщение, — «Офлайн после отправки» сразу возвращает статус обратно. «Прочитать чат после ответа» отмечает чат прочитанным, когда ты отвечаешь. Пока призрак включён, 👻 висит в Dynamic Island и на экране блокировки."), sectionId: self.section)
         case .historyHeader:
             return ItemListSectionHeaderItem(presentationData: presentationData, text: "ИСТОРИЯ СООБЩЕНИЙ", sectionId: self.section)
         case let .saveDeleted(value):
@@ -149,6 +159,7 @@ private func ayuGramSettingsControllerEntries() -> [AyuGramSettingsControllerEnt
     entries.append(.sendTyping(AyuSettings.sendUploadProgress))
     entries.append(.offlineAfterSend(AyuSettings.sendOfflinePacketAfterOnline))
     entries.append(.readAfterSend(AyuSettings.markReadAfterSend))
+    entries.append(.liveActivity(AyuGhostLiveActivity.isEnabled))
     entries.append(.ghostFooter)
 
     entries.append(.historyHeader)
@@ -188,6 +199,10 @@ public func ayuGramSettingsController(context: AccountContext) -> ViewController
         },
         updateReadAfterSend: { value in
             AyuSettings.markReadAfterSend = value
+            refresh()
+        },
+        updateLiveActivity: { value in
+            AyuGhostLiveActivity.isEnabled = value
             refresh()
         },
         updateSaveDeleted: { value in

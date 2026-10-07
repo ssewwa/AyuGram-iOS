@@ -458,6 +458,22 @@ func chatContextMenuItems(context: AccountContext, peerId: EnginePeer.Id, promoI
                                 })))
                             }
                             
+                            // exteraGram: protect the chat with Face ID
+                            let isChatLocked = ExteraChatLock.isLocked(peerId)
+                            items.append(.action(ContextMenuActionItem(text: isChatLocked ? "Снять защиту \(ExteraChatLock.biometryName)" : "Защитить \(ExteraChatLock.biometryName)", icon: { theme in generateTintedImage(image: UIImage(bundleImageName: "Chat/Context Menu/Lock"), color: theme.contextMenu.primaryColor) }, action: { _, f in
+                                f(.default)
+                                if !isChatLocked && !ExteraChatLock.isAvailable {
+                                    let presentationData = context.sharedContext.currentPresentationData.with { $0 }
+                                    chatListController?.present(textAlertController(context: context, title: nil, text: "Чтобы защищать чаты, включите Face ID или код-пароль в настройках iPhone.", actions: [TextAlertAction(type: .defaultAction, title: presentationData.strings.Common_OK, action: {})]), in: .window(.root))
+                                    return
+                                }
+                                ExteraChatLock.authenticate(peerId: nil, reason: isChatLocked ? "Снять защиту с чата" : "Защитить чат", completion: { success in
+                                    if success {
+                                        ExteraChatLock.setLocked(peerId, !isChatLocked)
+                                    }
+                                })
+                            })))
+                            
                             if !isSavedMessages {
                                 let isMuted = chatContextMenuPeerIsMuted(peer: peer, notificationSettings: notificationSettings, globalNotificationSettings: globalNotificationSettings)
                                 items.append(.action(ContextMenuActionItem(text: isMuted ? strings.ChatList_Context_Unmute : strings.ChatList_Context_Mute, icon: { theme in generateTintedImage(image: UIImage(bundleImageName: isMuted ? "Chat/Context Menu/Unmute" : "Chat/Context Menu/Muted"), color: theme.contextMenu.primaryColor) }, action: { _, f in

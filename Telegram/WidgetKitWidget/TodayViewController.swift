@@ -927,6 +927,12 @@ struct Static_AvatarsWidget: Widget {
 @main
 struct AllWidgetsEntryPoint {
     static func main() {
+        #if canImport(ActivityKit)
+        if #available(iOS 16.2, *) {
+            AllWidgetsWithLiveActivities.main()
+            return
+        }
+        #endif
         if #available(iOS 14.0, *) {
             AllWidgets.main()
         } else {
@@ -942,6 +948,18 @@ struct AllWidgets: WidgetBundle {
         Static_AvatarsWidget()
    }
 }
+
+#if canImport(ActivityKit)
+// AyuGram: same widgets plus the ghost mode Live Activity
+@available(iOSApplicationExtension 16.2, iOS 16.2, *)
+struct AllWidgetsWithLiveActivities: WidgetBundle {
+   var body: some Widget {
+        Static_Widget()
+        Static_AvatarsWidget()
+        AyuGhostLiveActivityWidget()
+   }
+}
+#endif
 
 #else
 

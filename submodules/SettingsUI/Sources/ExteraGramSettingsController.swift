@@ -15,19 +15,22 @@ private final class ExteraGramSettingsControllerArguments {
     let updateNumberRounding: (Bool) -> Void
     let updateHidePhoneNumber: (Bool) -> Void
     let updateShowIdAndDc: (Bool) -> Void
+    let unlockAllChats: () -> Void
 
     init(
         updateTitleText: @escaping (String) -> Void,
         updateTimeWithSeconds: @escaping (Bool) -> Void,
         updateNumberRounding: @escaping (Bool) -> Void,
         updateHidePhoneNumber: @escaping (Bool) -> Void,
-        updateShowIdAndDc: @escaping (Bool) -> Void
+        updateShowIdAndDc: @escaping (Bool) -> Void,
+        unlockAllChats: @escaping () -> Void
     ) {
         self.updateTitleText = updateTitleText
         self.updateTimeWithSeconds = updateTimeWithSeconds
         self.updateNumberRounding = updateNumberRounding
         self.updateHidePhoneNumber = updateHidePhoneNumber
         self.updateShowIdAndDc = updateShowIdAndDc
+        self.unlockAllChats = unlockAllChats
     }
 }
 
@@ -35,6 +38,7 @@ private enum ExteraGramSettingsSection: Int32 {
     case title
     case appearance
     case profile
+    case lockedChats
 }
 
 private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
@@ -52,6 +56,10 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
     case showIdAndDc(Bool)
     case profileFooter
 
+    case lockedChatsHeader
+    case unlockAllChats(Int)
+    case lockedChatsFooter(String)
+
     var section: ItemListSectionId {
         switch self {
         case .titleHeader, .titleText, .titleFooter:
@@ -60,6 +68,8 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
             return ExteraGramSettingsSection.appearance.rawValue
         case .profileHeader, .hidePhoneNumber, .showIdAndDc, .profileFooter:
             return ExteraGramSettingsSection.profile.rawValue
+        case .lockedChatsHeader, .unlockAllChats, .lockedChatsFooter:
+            return ExteraGramSettingsSection.lockedChats.rawValue
         }
     }
 
@@ -87,6 +97,12 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
             return 9
         case .profileFooter:
             return 10
+        case .lockedChatsHeader:
+            return 11
+        case .unlockAllChats:
+            return 12
+        case .lockedChatsFooter:
+            return 13
         }
     }
 
@@ -127,6 +143,14 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
             return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Показывать ID и DC", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.updateShowIdAndDc(value)
             })
+        case .lockedChatsHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ЗАЩИЩЁННЫЕ ЧАТЫ", sectionId: self.section)
+        case let .unlockAllChats(count):
+            return ItemListActionItem(presentationData: presentationData, systemStyle: .glass, title: count == 0 ? "Нет защищённых чатов" : "Снять защиту со всех (\(count))", kind: count == 0 ? .disabled : .destructive, alignment: .natural, sectionId: self.section, style: .blocks, action: {
+                arguments.unlockAllChats()
+            })
+        case let .lockedChatsFooter(biometryName):
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Зажми чат в списке и выбери «Защитить \(biometryName)». Такой чат откроется только после проверки, в списке вместо последнего сообщения будет «🔒 Чат защищён», а превью по долгому нажатию скроется. Чат снова закрывается, когда ты выходишь из приложения."), sectionId: self.section)
         case .profileFooter:
             return ItemListTextItem(presentationData: presentationData, text: .plain("Номер не будет виден в шапке настроек — удобно для скриншотов. ID и дата-центр появятся в профилях людей, групп и каналов; нажми на строку, чтобы скопировать ID."), sectionId: self.section)
         }
@@ -149,6 +173,10 @@ private func exteraGramSettingsControllerEntries() -> [ExteraGramSettingsControl
     entries.append(.hidePhoneNumber(ExteraSettings.hidePhoneNumber))
     entries.append(.showIdAndDc(ExteraSettings.showIdAndDc))
     entries.append(.profileFooter)
+
+    entries.append(.lockedChatsHeader)
+    entries.append(.unlockAllChats(ExteraChatLock.lockedCount))
+    entries.append(.lockedChatsFooter(ExteraChatLock.biometryName))
 
     return entries
 }
@@ -179,6 +207,14 @@ public func exteraGramSettingsController(context: AccountContext) -> ViewControl
         updateShowIdAndDc: { value in
             ExteraSettings.showIdAndDc = value
             refresh()
+        },
+        unlockAllChats: {
+            ExteraChatLock.authenticate(peerId: nil, reason: "Снять защиту со всех чатов", completion: { success in
+                if success {
+                    ExteraChatLock.unlockAll()
+                    refresh()
+                }
+            })
         }
     )
 

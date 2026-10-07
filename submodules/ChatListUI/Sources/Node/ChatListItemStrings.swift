@@ -487,5 +487,9 @@ public func chatListItemStrings(strings: PresentationStrings, nameDisplayOrder: 
     if richTextPreview?.string != messageText {
         richTextPreview = nil
     }
+    // exteraGram: don't leak messages of chats protected with Face ID
+    if ExteraChatLock.isLocked(chatPeer.peerId) {
+        return (peer, true, "🔒 Чат защищён", [], nil, nil, nil)
+    }
     return (peer, hideAuthor, messageText, messageEntities, spoilers, customEmojiRanges, richTextPreview)
 }

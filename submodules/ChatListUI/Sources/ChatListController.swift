@@ -1959,6 +1959,9 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                             source = .controller(ContextControllerContentSourceImpl(controller: communityController, sourceNode: node, navigationController: strongSelf.navigationController as? NavigationController))
                         } else if let location = location {
                             source = .location(ChatListContextLocationContentSource(controller: strongSelf, location: location))
+                        } else if ExteraChatLock.needsAuthentication(peer.peerId) {
+                            // exteraGram: no preview for protected chats
+                            source = .controller(ContextControllerContentSourceImpl(controller: ExteraLockedChatPreviewController(presentationData: strongSelf.presentationData), sourceNode: node, navigationController: strongSelf.navigationController as? NavigationController))
                         } else {
                             let chatController = strongSelf.context.sharedContext.makeChatController(context: strongSelf.context, chatLocation: .peer(id: peer.peerId), subject: nil, botStart: nil, mode: .standard(.previewing), params: nil)
                             chatController.customNavigationController = strongSelf.navigationController as? NavigationController
@@ -2048,6 +2051,9 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 let contextContentSource: ContextContentSource
                 if peer.id.namespace == Namespaces.Peer.SecretChat, let node = node.subnodes?.first as? ContextExtractedContentContainingNode {
                     contextContentSource = .extracted(ChatListHeaderBarContextExtractedContentSource(controller: strongSelf, sourceNode: node, sourceView: nil, keepInPlace: false))
+                } else if ExteraChatLock.needsAuthentication(peer.id) {
+                    // exteraGram: no preview for protected chats
+                    contextContentSource = .controller(ContextControllerContentSourceImpl(controller: ExteraLockedChatPreviewController(presentationData: strongSelf.presentationData), sourceNode: node, navigationController: strongSelf.navigationController as? NavigationController))
                 } else {
                     var subject: ChatControllerSubject?
                     if case let .search(messageId) = source, let id = messageId {

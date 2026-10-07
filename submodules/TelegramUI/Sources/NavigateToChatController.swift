@@ -22,6 +22,16 @@ import ChatMessageNotificationItem
 import FaceScanScreen
 
 public func navigateToChatControllerImpl(_ params: NavigateToChatControllerParams) {
+    // exteraGram: chats protected with Face ID
+    if ExteraChatLock.needsAuthentication(params.chatLocation.peerId) {
+        ExteraChatLock.authenticate(peerId: params.chatLocation.peerId, completion: { success in
+            if success {
+                navigateToChatControllerImpl(params)
+            }
+        })
+        return
+    }
+    
     if case let .peer(peer) = params.chatLocation {
         let _ = params.context.engine.peers.ensurePeerIsLocallyAvailable(peer: peer).startStandalone()
     }

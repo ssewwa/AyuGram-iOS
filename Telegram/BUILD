@@ -1632,7 +1632,9 @@ plist_fragment(
     <key>NSContactsUsageDescription</key>
     <string>Telegram stores your contacts heavily encrypted in the cloud to let you connect with your friends across all your devices.</string>
     <key>NSFaceIDUsageDescription</key>
-    <string>You can use Face ID to unlock the app.</string>
+    <string>Face ID защищает приложение и отдельные чаты.</string>
+    <key>NSSupportsLiveActivities</key>
+    <true/>
     <key>NSLocationAlwaysUsageDescription</key>
     <string>When you send your location to your friends, Telegram needs access to show them a map. You also need this to send locations from an Apple Watch.</string>
     <key>NSLocationWhenInUseUsageDescription</key>

@@ -2011,6 +2011,9 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
+        // AyuGram: ghost mode Live Activity
+        AyuGhostLiveActivity.sync()
+        
         self.isInForegroundValue = true
         self.isInForegroundPromise.set(true)
         self.isActiveValue = true
