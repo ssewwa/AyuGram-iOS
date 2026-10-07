@@ -18,6 +18,10 @@ definitions:
     - &submodules
       name: Fetch submodules
       script: git submodule update --init --recursive --depth 1 --jobs 8
+    - &metal
+      name: Install Metal Toolchain
+      # Xcode 26 ships without the Metal compiler; Telegram compiles .metal shaders
+      script: xcodebuild -downloadComponent MetalToolchain
     - &config
       name: Generate build configuration
       script: |
@@ -51,6 +55,7 @@ workflows:
     cache: *cache
     scripts:
       - *submodules
+      - *metal
       - *config
       - name: Build IPA
         script: |
@@ -95,6 +100,7 @@ workflows:
     cache: *cache
     scripts:
       - *submodules
+      - *metal
       - *config
       - name: Build for simulator
         script: |
