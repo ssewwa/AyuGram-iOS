@@ -474,6 +474,27 @@ func chatContextMenuItems(context: AccountContext, peerId: EnginePeer.Id, promoI
                                 })
                             })))
                             
+                            // exteraGram «Коротко»: on-device summary with Apple Intelligence
+                            if ExteraChatSummary.isAvailable && !isChatLocked {
+                                items.append(.action(ContextMenuActionItem(text: "Коротко", icon: { theme in generateTintedImage(image: UIImage(systemName: "sparkles"), color: theme.contextMenu.primaryColor) }, action: { _, f in
+                                    f(.default)
+                                    let presentationData = context.sharedContext.currentPresentationData.with { $0 }
+                                    let progress = OverlayStatusController(theme: presentationData.theme, type: .loading(cancelled: nil))
+                                    chatListController?.present(progress, in: .window(.root))
+                                    ExteraChatSummary.summarize(postbox: context.account.postbox, accountPeerId: context.account.peerId, peerId: peerId, completion: { result in
+                                        progress.dismiss()
+                                        let text: String
+                                        switch result {
+                                        case let .success(summary):
+                                            text = summary
+                                        case let .failure(error):
+                                            text = error.localizedDescription
+                                        }
+                                        chatListController?.present(textAlertController(context: context, title: "✨ Коротко", text: text, actions: [TextAlertAction(type: .defaultAction, title: presentationData.strings.Common_OK, action: {})]), in: .window(.root))
+                                    })
+                                })))
+                            }
+                            
                             if !isSavedMessages {
                                 let isMuted = chatContextMenuPeerIsMuted(peer: peer, notificationSettings: notificationSettings, globalNotificationSettings: globalNotificationSettings)
                                 items.append(.action(ContextMenuActionItem(text: isMuted ? strings.ChatList_Context_Unmute : strings.ChatList_Context_Mute, icon: { theme in generateTintedImage(image: UIImage(bundleImageName: isMuted ? "Chat/Context Menu/Unmute" : "Chat/Context Menu/Muted"), color: theme.contextMenu.primaryColor) }, action: { _, f in

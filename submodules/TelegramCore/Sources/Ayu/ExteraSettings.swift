@@ -65,6 +65,14 @@ public final class ExteraSettings {
         get { return self.bool("localVoiceTranscription", true) }
         set { self.set(newValue, "localVoiceTranscription") }
     }
+
+    // MARK: Apple Intelligence (iOS only)
+
+    // "Коротко": on-device chat summary with Apple's Foundation Models.
+    public static var aiSummary: Bool {
+        get { return self.bool("aiSummary", true) }
+        set { self.set(newValue, "aiSummary") }
+    }
 }
 
 // Peer id the way bots and other clients show it: users as is, basic groups with "-", channels with "-100".

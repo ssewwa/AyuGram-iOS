@@ -62,7 +62,12 @@ definitions:
           for CACHE_ID in $(curl -sS -H "x-auth-token: $CM_API_TOKEN" "https://api.codemagic.io/apps/$APP_ID/caches" | python3 -c 'import json,sys; print(" ".join(c["_id"] for c in json.load(sys.stdin).get("caches", [])))'); do
             curl -sS -o /dev/null -w "Deleted old cache $CACHE_ID: HTTP %{http_code}\n" -X DELETE -H "x-auth-token: $CM_API_TOKEN" "https://api.codemagic.io/apps/$APP_ID/caches/$CACHE_ID"
           done
-          sleep 20 # deletion is asynchronous
+          # deletion is asynchronous: wait until the list is really empty (up to 5 min)
+          for i in $(seq 1 30); do
+            LEFT=$(curl -sS -H "x-auth-token: $CM_API_TOKEN" "https://api.codemagic.io/apps/$APP_ID/caches" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("caches", [])))' || echo 1)
+            [ "$LEFT" = "0" ] && echo "Old caches gone" && break
+            sleep 10
+          done
         fi
     - &config
       name: Generate build configuration
