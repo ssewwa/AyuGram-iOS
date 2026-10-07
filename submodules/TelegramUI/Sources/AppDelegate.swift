@@ -529,8 +529,16 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         
         let baseAppBundleId = Bundle.main.bundleIdentifier!
         let appGroupName = "group.\(baseAppBundleId)"
-        let maybeAppGroupUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName)
-        
+        // AyuGram: re-signed builds (Sauce Labs, sideloading) can lose the App Group entitlement.
+        // Fall back to the app's own container so the app still starts; extensions won't share data.
+        let maybeAppGroupUrl: URL? = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) ?? {
+            guard let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("ayu-group", isDirectory: true) else {
+                return nil
+            }
+            try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            return url
+        }()
+
         let buildConfig = BuildConfig(baseAppBundleId: baseAppBundleId)
         self.buildConfig = buildConfig
         let signatureDict = BuildConfigExtra.signatureDict()
