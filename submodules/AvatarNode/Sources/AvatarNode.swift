@@ -581,13 +581,13 @@ public final class AvatarNode: ASDisplayNode {
             authorOfMessage: MessageReference? = nil,
             overrideImage: AvatarNodeImageOverride? = nil,
             emptyColor: UIColor? = nil,
-            clipStyle: AvatarNodeClipStyle = .round,
+            clipStyle inputClipStyle: AvatarNodeClipStyle = .round,
             synchronousLoad: Bool = false,
             displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
             storeUnrounded: Bool = false,
             cutoutRect: CGRect? = nil
         ) {
-            let clipStyle = exteraAvatarClipStyle(clipStyle)
+            let clipStyle = exteraAvatarClipStyle(inputClipStyle)
             var synchronousLoad = synchronousLoad
             var representation: TelegramMediaImageRepresentation?
             var icon = AvatarNodeIcon.none
@@ -711,12 +711,12 @@ public final class AvatarNode: ASDisplayNode {
             authorOfMessage: MessageReference? = nil,
             overrideImage: AvatarNodeImageOverride? = nil,
             emptyColor: UIColor? = nil,
-            clipStyle: AvatarNodeClipStyle = .round,
+            clipStyle inputClipStyle: AvatarNodeClipStyle = .round,
             synchronousLoad: Bool = false,
             displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
             storeUnrounded: Bool = false
         ) {
-            let clipStyle = exteraAvatarClipStyle(clipStyle)
+            let clipStyle = exteraAvatarClipStyle(inputClipStyle)
             let smallProfileImage = peer?.smallProfileImage
             let params = Params(
                 peerId: peer?.id,
@@ -790,13 +790,13 @@ public final class AvatarNode: ASDisplayNode {
             authorOfMessage: MessageReference? = nil,
             overrideImage: AvatarNodeImageOverride? = nil,
             emptyColor: UIColor? = nil,
-            clipStyle: AvatarNodeClipStyle = .round,
+            clipStyle inputClipStyle: AvatarNodeClipStyle = .round,
             synchronousLoad: Bool = false,
             displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
             storeUnrounded: Bool = false,
             cutoutRect: CGRect? = nil
         ) {
-            let clipStyle = exteraAvatarClipStyle(clipStyle)
+            let clipStyle = exteraAvatarClipStyle(inputClipStyle)
             var synchronousLoad = synchronousLoad
             var representation: TelegramMediaImageRepresentation?
             var icon = AvatarNodeIcon.none
@@ -1294,12 +1294,12 @@ public final class AvatarNode: ASDisplayNode {
         authorOfMessage: MessageReference? = nil,
         overrideImage: AvatarNodeImageOverride? = nil,
         emptyColor: UIColor? = nil,
-        clipStyle: AvatarNodeClipStyle = .round,
+        clipStyle inputClipStyle: AvatarNodeClipStyle = .round,
         synchronousLoad: Bool = false,
         displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
         storeUnrounded: Bool = false
     ) {
-        let clipStyle = exteraAvatarClipStyle(clipStyle)
+        let clipStyle = exteraAvatarClipStyle(inputClipStyle)
         self.contentNode.setPeer(
             accountPeerId: accountPeerId,
             postbox: postbox,
@@ -1324,12 +1324,12 @@ public final class AvatarNode: ASDisplayNode {
         authorOfMessage: MessageReference? = nil,
         overrideImage: AvatarNodeImageOverride? = nil,
         emptyColor: UIColor? = nil,
-        clipStyle: AvatarNodeClipStyle = .round,
+        clipStyle inputClipStyle: AvatarNodeClipStyle = .round,
         synchronousLoad: Bool = false,
         displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
         storeUnrounded: Bool = false
     ) {
-        let clipStyle = exteraAvatarClipStyle(clipStyle)
+        let clipStyle = exteraAvatarClipStyle(inputClipStyle)
         self.contentNode.setPeerV2(
             context: genericContext,
             theme: theme,
@@ -1352,13 +1352,13 @@ public final class AvatarNode: ASDisplayNode {
         authorOfMessage: MessageReference? = nil,
         overrideImage: AvatarNodeImageOverride? = nil,
         emptyColor: UIColor? = nil,
-        clipStyle: AvatarNodeClipStyle = .round,
+        clipStyle inputClipStyle: AvatarNodeClipStyle = .round,
         synchronousLoad: Bool = false,
         displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
         storeUnrounded: Bool = false,
         cutoutRect: CGRect? = nil
     ) {
-        let clipStyle = exteraAvatarClipStyle(clipStyle)
+        let clipStyle = exteraAvatarClipStyle(inputClipStyle)
         self.contentNode.setPeer(
             context: context,
             account: account,

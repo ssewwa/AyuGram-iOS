@@ -2182,12 +2182,12 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                     })
                 }
                 self.storySubscriptionsDisposable = (self.context.engine.messages.storySubscriptions(isHidden: self.location == .chatList(groupId: .archive))
-                |> deliverOnMainQueue).startStrict(next: { [weak self] rawStorySubscriptions in
+                |> deliverOnMainQueue).startStrict(next: { [weak self] rawStorySubscriptionsValue in
                     guard let self else {
                         return
                     }
                     // exteraGram: hide stories above the chat list
-                    let rawStorySubscriptions = ExteraSettings.hideStories ? EngineStorySubscriptions(accountItem: nil, items: [], hasMoreToken: nil) : rawStorySubscriptions
+                    let rawStorySubscriptions = ExteraSettings.hideStories ? EngineStorySubscriptions(accountItem: nil, items: [], hasMoreToken: nil) : rawStorySubscriptionsValue
                     
                     self.rawStorySubscriptions = rawStorySubscriptions
                     var items: [EngineStorySubscriptions.Item] = []

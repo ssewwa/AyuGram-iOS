@@ -44,7 +44,7 @@ public enum ExteraChatSummary {
     }
 
     public static func summarize(postbox: Postbox, accountPeerId: PeerId, peerId: PeerId, completion: @escaping (Result<String, Error>) -> Void) {
-        let _ = (postbox.aroundMessageHistoryViewForLocation(.peer(peerId: peerId, threadId: nil), ignoreMessagesInTimestampRange: nil, ignoreMessageIds: Set(), anchor: .upperBound, count: 80, fixedCombinedReadStates: nil, topTaggedMessageIdNamespaces: Set(), tag: nil, appendMessagesFromTheSameGroup: false, namespaces: .not(Namespaces.Message.allNonRegular), orderStatistics: [])
+        let _ = (postbox.aroundMessageHistoryViewForLocation(.peer(peerId: peerId, threadId: nil), anchor: .upperBound, ignoreMessagesInTimestampRange: nil, ignoreMessageIds: Set(), count: 80, fixedCombinedReadStates: nil, topTaggedMessageIdNamespaces: Set(), tag: nil, appendMessagesFromTheSameGroup: false, namespaces: .not(Namespaces.Message.allNonRegular), orderStatistics: [])
         |> take(1)
         |> deliverOnMainQueue).startStandalone(next: { view, _, _ in
             let transcript = self.transcript(view.entries.map { $0.message }, accountPeerId: accountPeerId)
@@ -85,7 +85,7 @@ public enum ExteraChatSummary {
             if message.author?.id == accountPeerId {
                 author = "Я"
             } else if let peer = message.author {
-                author = EnginePeer(peer).compactDisplayTitle
+                author = peer.debugDisplayTitle
             } else {
                 author = "?"
             }

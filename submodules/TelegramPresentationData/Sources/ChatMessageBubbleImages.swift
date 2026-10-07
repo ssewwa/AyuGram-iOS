@@ -143,9 +143,9 @@ public func messageBubbleArguments(maxCornerRadius: CGFloat, minCornerRadius: CG
     return (topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, drawTail && ExteraSettings.bubbleTail != "none")
 }
 
-public func messageBubbleImage(maxCornerRadius: CGFloat, minCornerRadius: CGFloat, incoming: Bool, fillColor: UIColor, strokeColor: UIColor, neighbors: MessageBubbleImageNeighbors, shadow: PresentationThemeBubbleShadow?, wallpaper: TelegramWallpaper, knockout knockoutValue: Bool, mask: Bool = false, extendedEdges: Bool = false, onlyOutline: Bool = false, onlyShadow: Bool = false, alwaysFillColor: Bool = false) -> UIImage {
+public func messageBubbleImage(maxCornerRadius: CGFloat, minCornerRadius: CGFloat, incoming: Bool, fillColor inputFillColor: UIColor, strokeColor: UIColor, neighbors: MessageBubbleImageNeighbors, shadow: PresentationThemeBubbleShadow?, wallpaper: TelegramWallpaper, knockout knockoutValue: Bool, mask: Bool = false, extendedEdges: Bool = false, onlyOutline: Bool = false, onlyShadow: Bool = false, alwaysFillColor: Bool = false) -> UIImage {
     // exteraGram: translucent "glass" bubbles let the wallpaper show through
-    let fillColor = (ExteraSettings.glassBubbles && !mask) ? fillColor.withMultipliedAlpha(0.62) : fillColor
+    let fillColor = (ExteraSettings.glassBubbles && !mask) ? inputFillColor.withMultipliedAlpha(0.62) : inputFillColor
     let topLeftRadius: CGFloat
     let topRightRadius: CGFloat
     let bottomLeftRadius: CGFloat
