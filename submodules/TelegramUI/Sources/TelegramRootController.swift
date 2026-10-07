@@ -207,18 +207,11 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         }
         let callListController = CallListController(context: self.context, mode: .tab)
         
-        var controllers: [ViewController] = []
-        
         let contactsController = ContactsController(context: self.context)
         contactsController.switchToChatsController = {  [weak self] in
             self?.openChatsController(activateSearch: false)
         }
-        controllers.append(contactsController)
-        
-        if showCallsTab {
-            controllers.append(callListController)
-        }
-        controllers.append(chatListController)
+        var controllers = exteraTabs(contacts: contactsController, calls: showCallsTab ? callListController : nil, chats: chatListController)
         
         var restoreSettignsController: (ViewController & SettingsController)?
         if let sharedContext = self.context.sharedContext as? SharedAccountContextImpl {
@@ -239,7 +232,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         accountSettingsController.parentController = self
         controllers.append(accountSettingsController)
                 
-        tabBarController.setControllers(controllers, selectedIndex: restoreSettignsController != nil ? (controllers.count - 1) : (controllers.count - 2))
+        tabBarController.setControllers(controllers, selectedIndex: restoreSettignsController != nil ? (controllers.count - 1) : (controllers.firstIndex(where: { $0 === chatListController }) ?? 0))
         
         self.contactsController = contactsController
         self.callListController = callListController
@@ -253,12 +246,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         guard let rootTabController = self.rootTabController as? TabBarControllerImpl else {
             return
         }
-        var controllers: [ViewController] = []
-        controllers.append(self.contactsController!)
-        if showCallsTab {
-            controllers.append(self.callListController!)
-        }
-        controllers.append(self.chatListController!)
+        var controllers = exteraTabs(contacts: self.contactsController!, calls: showCallsTab ? self.callListController! : nil, chats: self.chatListController!)
         controllers.append(self.accountSettingsController!)
         
         rootTabController.setControllers(controllers, selectedIndex: nil)
@@ -863,3 +851,21 @@ extension MediaEditorScreenImpl.Result: @retroactive MediaEditorScreenResult {
     }
 }
 #endif
+
+// exteraGram: tab bar setup (hide Contacts / Calls, Chats first). Settings is appended by the caller.
+private func exteraTabs(contacts: ViewController, calls: ViewController?, chats: ViewController) -> [ViewController] {
+    var result: [ViewController] = []
+    if ExteraSettings.chatsTabFirst {
+        result.append(chats)
+    }
+    if !ExteraSettings.hideContactsTab {
+        result.append(contacts)
+    }
+    if let calls = calls, !ExteraSettings.hideCallsTab {
+        result.append(calls)
+    }
+    if !ExteraSettings.chatsTabFirst {
+        result.append(chats)
+    }
+    return result
+}

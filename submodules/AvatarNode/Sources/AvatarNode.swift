@@ -587,6 +587,7 @@ public final class AvatarNode: ASDisplayNode {
             storeUnrounded: Bool = false,
             cutoutRect: CGRect? = nil
         ) {
+            let clipStyle = exteraAvatarClipStyle(clipStyle)
             var synchronousLoad = synchronousLoad
             var representation: TelegramMediaImageRepresentation?
             var icon = AvatarNodeIcon.none
@@ -715,6 +716,7 @@ public final class AvatarNode: ASDisplayNode {
             displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
             storeUnrounded: Bool = false
         ) {
+            let clipStyle = exteraAvatarClipStyle(clipStyle)
             let smallProfileImage = peer?.smallProfileImage
             let params = Params(
                 peerId: peer?.id,
@@ -794,6 +796,7 @@ public final class AvatarNode: ASDisplayNode {
             storeUnrounded: Bool = false,
             cutoutRect: CGRect? = nil
         ) {
+            let clipStyle = exteraAvatarClipStyle(clipStyle)
             var synchronousLoad = synchronousLoad
             var representation: TelegramMediaImageRepresentation?
             var icon = AvatarNodeIcon.none
@@ -1296,6 +1299,7 @@ public final class AvatarNode: ASDisplayNode {
         displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
         storeUnrounded: Bool = false
     ) {
+        let clipStyle = exteraAvatarClipStyle(clipStyle)
         self.contentNode.setPeer(
             accountPeerId: accountPeerId,
             postbox: postbox,
@@ -1325,6 +1329,7 @@ public final class AvatarNode: ASDisplayNode {
         displayDimensions: CGSize = CGSize(width: 60.0, height: 60.0),
         storeUnrounded: Bool = false
     ) {
+        let clipStyle = exteraAvatarClipStyle(clipStyle)
         self.contentNode.setPeerV2(
             context: genericContext,
             theme: theme,
@@ -1353,6 +1358,7 @@ public final class AvatarNode: ASDisplayNode {
         storeUnrounded: Bool = false,
         cutoutRect: CGRect? = nil
     ) {
+        let clipStyle = exteraAvatarClipStyle(clipStyle)
         self.contentNode.setPeer(
             context: context,
             account: account,
@@ -1552,3 +1558,11 @@ public final class AvatarNode: ASDisplayNode {
     }
 }
 
+
+// exteraGram: avatar shape from settings. Applied where a round avatar was requested.
+func exteraAvatarClipStyle(_ clipStyle: AvatarNodeClipStyle) -> AvatarNodeClipStyle {
+    if case .round = clipStyle, ExteraSettings.avatarShape == "rounded" {
+        return .roundedRect
+    }
+    return clipStyle
+}

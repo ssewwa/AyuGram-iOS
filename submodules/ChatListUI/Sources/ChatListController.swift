@@ -294,7 +294,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
         case let .chatList(groupId):
             if groupId == .root {
                 // exteraGram: custom title
-                title = ExteraSettings.titleText.isEmpty ? self.presentationData.strings.DialogList_Title : ExteraSettings.titleText
+                title = ExteraSettings.chatListTitle(defaultTitle: self.presentationData.strings.DialogList_Title)
             } else {
                 title = self.presentationData.strings.ChatList_ArchivedChatsTitle
             }
@@ -2170,11 +2170,24 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             if self.previewing {
                 self.storiesReady.set(.single(true))
             } else {
+                // exteraGram: remember the account name / username for the chat list title
+                if case .chatList(groupId: .root) = self.location {
+                    let _ = (self.context.engine.data.get(TelegramEngine.EngineData.Item.Peer.Peer(id: self.context.account.peerId))
+                    |> deliverOnMainQueue).startStandalone(next: { peer in
+                        guard let peer else {
+                            return
+                        }
+                        ExteraSettings.cachedAccountName = peer.compactDisplayTitle
+                        ExteraSettings.cachedAccountUsername = peer.addressName ?? ""
+                    })
+                }
                 self.storySubscriptionsDisposable = (self.context.engine.messages.storySubscriptions(isHidden: self.location == .chatList(groupId: .archive))
                 |> deliverOnMainQueue).startStrict(next: { [weak self] rawStorySubscriptions in
                     guard let self else {
                         return
                     }
+                    // exteraGram: hide stories above the chat list
+                    let rawStorySubscriptions = ExteraSettings.hideStories ? EngineStorySubscriptions(accountItem: nil, items: [], hasMoreToken: nil) : rawStorySubscriptions
                     
                     self.rawStorySubscriptions = rawStorySubscriptions
                     var items: [EngineStorySubscriptions.Item] = []
@@ -7161,7 +7174,7 @@ private final class ChatListLocationContext {
         case let .chatList(groupId):
             if groupId == .root {
                 // exteraGram: custom title
-                defaultTitle = ExteraSettings.titleText.isEmpty ? presentationData.strings.DialogList_Title : ExteraSettings.titleText
+                defaultTitle = ExteraSettings.chatListTitle(defaultTitle: presentationData.strings.DialogList_Title)
             } else {
                 defaultTitle = presentationData.strings.ChatList_ArchivedChatsTitle
             }

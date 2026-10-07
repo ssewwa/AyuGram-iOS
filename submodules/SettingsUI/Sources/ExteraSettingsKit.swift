@@ -21,6 +21,7 @@ enum ExteraRow {
     case action(title: String, destructive: Bool, enabled: Bool, perform: () -> Void)
     case input(placeholder: String, text: String, update: (String) -> Void)
     case note(String)
+    case choice(title: String, icon: UIImage?, selected: Bool, select: () -> Void)
 }
 
 private struct ExteraEntry: ItemListNodeEntry {
@@ -71,6 +72,11 @@ private struct ExteraEntry: ItemListNodeEntry {
             }, action: {})
         case let .note(text):
             return ItemListTextItem(presentationData: presentationData, text: .plain(text), sectionId: self.section)
+        case let .choice(title, icon, selected, select):
+            return ItemListCheckboxItem(presentationData: presentationData, systemStyle: .glass, icon: icon, iconSize: icon == nil ? nil : CGSize(width: 30.0, height: 30.0), title: title, style: .right, checked: selected, zeroSeparatorInsets: false, sectionId: self.section, action: {
+                select()
+                env.refresh()
+            })
         }
     }
 }
@@ -85,6 +91,7 @@ private func signature(of row: ExteraRow) -> String {
     case let .action(title, destructive, enabled, _): return "a\(title)\(destructive)\(enabled)"
     case let .input(placeholder, _, _): return "i\(placeholder)"
     case let .note(text): return "x\(text)"
+    case let .choice(title, _, selected, _): return "c\(title)\(selected)"
     }
 }
 

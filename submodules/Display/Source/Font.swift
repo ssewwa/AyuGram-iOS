@@ -158,7 +158,22 @@ public struct Font {
 
     private static let cache = Cache()
     
+    // exteraGram: interface font from settings ("extera.fontDesign"), read once at launch
+    public static let exteraDesign: Design = {
+        switch UserDefaults.standard.string(forKey: "extera.fontDesign") {
+        case "round":
+            return .round
+        case "serif":
+            return .serif
+        case "monospace":
+            return .monospace
+        default:
+            return .regular
+        }
+    }()
+    
     public static func with(size: CGFloat, design: Design = .regular, weight: Weight = .regular, width: Width = .standard, traits: Traits = []) -> UIFont {
+        let design = design == .regular ? Font.exteraDesign : design
         let key = "\(size)_\(design.key)_\(weight.key)_\(width.key)_\(traits.rawValue)"
         
         if let cachedFont = self.cache.get(key) {
@@ -279,18 +294,30 @@ public struct Font {
     }
     
     public static func regular(_ size: CGFloat) -> UIFont {
+        if Font.exteraDesign != .regular {
+            return Font.with(size: size, design: Font.exteraDesign, weight: .regular)
+        }
         return UIFont.systemFont(ofSize: size)
     }
     
     public static func medium(_ size: CGFloat) -> UIFont {
+        if Font.exteraDesign != .regular {
+            return Font.with(size: size, design: Font.exteraDesign, weight: .medium)
+        }
         return UIFont.systemFont(ofSize: size, weight: UIFont.Weight.medium)
     }
     
     public static func semibold(_ size: CGFloat) -> UIFont {
+        if Font.exteraDesign != .regular {
+            return Font.with(size: size, design: Font.exteraDesign, weight: .semibold)
+        }
         return UIFont.systemFont(ofSize: size, weight: UIFont.Weight.semibold)
     }
     
     public static func bold(_ size: CGFloat) -> UIFont {
+        if Font.exteraDesign != .regular {
+            return Font.with(size: size, design: Font.exteraDesign, weight: .bold)
+        }
         if #available(iOS 8.2, *) {
             return UIFont.boldSystemFont(ofSize: size)
         } else {

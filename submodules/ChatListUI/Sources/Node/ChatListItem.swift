@@ -2023,6 +2023,10 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
             }
             
             var avatarDiameter = min(60.0, floor(item.presentationData.fontSize.baseDisplaySize * 60.0 / 17.0))
+            // exteraGram: compact chat list
+            if ExteraSettings.compactChatList {
+                avatarDiameter = floor(avatarDiameter * 0.75)
+            }
             
             if case let .peer(peerData) = item.content, let customMessageListData = peerData.customMessageListData, customMessageListData.commandPrefix != nil {
                 avatarDiameter = 40.0
@@ -2562,6 +2566,9 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
             
             // if changed, adjust setupItem accordingly
             var avatarDiameter = min(60.0, floor(item.presentationData.fontSize.baseDisplaySize * 60.0 / 17.0))
+            if ExteraSettings.compactChatList {
+                avatarDiameter = floor(avatarDiameter * 0.75)
+            }
             let avatarLeftEdgeInset: CGFloat = item.useCommunityViewLayout ? 10.0 : 16.0
             let avatarLeftInset: CGFloat
             
@@ -3814,7 +3821,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
             let (textLayout, textApply) = textLayout(TextNodeLayoutArguments(
                 attributedString: textAttributedString,
                 backgroundColor: nil,
-                maximumNumberOfLines: (authorAttributedString == nil && itemTags.isEmpty && forumThread == nil && topForumTopicItems.isEmpty) ? 2 : 1,
+                maximumNumberOfLines: (authorAttributedString == nil && itemTags.isEmpty && forumThread == nil && topForumTopicItems.isEmpty && !ExteraSettings.compactChatList) ? 2 : 1,
                 truncationType: .end,
                 constrainedSize: CGSize(width: textMaxWidth, height: .greatestFiniteMagnitude),
                 alignment: .natural,
@@ -4040,7 +4047,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                 itemHeight += 20.0
             } else {
                 itemHeight += titleLayout.size.height
-                itemHeight += measureLayout.size.height * 3.0
+                // exteraGram: one preview line in the compact chat list
+                itemHeight += measureLayout.size.height * (ExteraSettings.compactChatList ? 2.0 : 3.0)
                 itemHeight += titleSpacing
                 itemHeight += authorSpacing
             }

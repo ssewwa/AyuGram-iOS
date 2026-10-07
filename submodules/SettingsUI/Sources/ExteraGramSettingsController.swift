@@ -34,11 +34,6 @@ private func exteraGeneralController(context: AccountContext) -> ViewController 
         let lockedCount = ExteraChatLock.lockedCount
         return [
             [
-                .header("Заголовок списка чатов"),
-                .input(placeholder: "Чаты", text: ExteraSettings.titleText, update: { ExteraSettings.titleText = $0.trimmingCharacters(in: .whitespacesAndNewlines) }),
-                .note("После перезапуска."),
-            ],
-            [
                 .header("Защищённые чаты"),
                 .action(title: lockedCount == 0 ? "Нет защищённых чатов" : "Снять защиту со всех (\(lockedCount))", destructive: true, enabled: lockedCount != 0, perform: {
                     ExteraChatLock.authenticate(peerId: nil, reason: "Снять защиту со всех чатов", completion: { success in
@@ -58,17 +53,6 @@ private func exteraGeneralController(context: AccountContext) -> ViewController 
             [
                 .header("Dynamic Island"),
                 .toggle(title: "Прогресс отправки", symbol: "arrow.up.circle", value: ExteraUploadLiveActivity.isEnabled, update: { ExteraUploadLiveActivity.isEnabled = $0 }),
-            ],
-        ]
-    })
-}
-
-private func exteraAppearanceController(context: AccountContext) -> ViewController {
-    return exteraPageController(context: context, title: "Оформление", sections: { _ in
-        return [
-            [
-                .toggle(title: "Время с секундами", symbol: "clock", value: ExteraSettings.formatTimeWithSeconds, update: { ExteraSettings.formatTimeWithSeconds = $0 }),
-                .toggle(title: "Не округлять числа", symbol: "number", value: ExteraSettings.disableNumberRounding, update: { ExteraSettings.disableNumberRounding = $0 }),
             ],
         ]
     })

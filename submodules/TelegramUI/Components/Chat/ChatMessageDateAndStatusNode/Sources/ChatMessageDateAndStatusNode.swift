@@ -547,6 +547,10 @@ public class ChatMessageDateAndStatusNode: ASDisplayNode {
             if let impressionCount = arguments.impressionCount {
                 updatedDateText = compactNumericCountString(impressionCount, decimalSeparator: arguments.presentationData.dateTimeFormat.decimalSeparator) + " " + updatedDateText
             }
+            // exteraGram: hide the time in bubbles (read checks stay)
+            if ExteraSettings.hideMessageTime {
+                updatedDateText = arguments.impressionCount.flatMap { compactNumericCountString($0, decimalSeparator: arguments.presentationData.dateTimeFormat.decimalSeparator) } ?? ""
+            }
             
             let dateFont = Font.regular(floor(arguments.presentationData.fontSize.baseDisplaySize * 11.0 / 17.0))
             let (date, dateApply) = dateLayout(TextNodeLayoutArguments(attributedString: NSAttributedString(string: updatedDateText, font: dateFont, textColor: dateColor), backgroundColor: nil, maximumNumberOfLines: 1, truncationType: .middle, constrainedSize: arguments.constrainedSize, alignment: .natural, cutout: nil, insets: UIEdgeInsets()))

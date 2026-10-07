@@ -140,10 +140,12 @@ public func messageBubbleArguments(maxCornerRadius: CGFloat, minCornerRadius: CG
         bottomLeftRadius = tmp
     }
     
-    return (topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, drawTail)
+    return (topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, drawTail && ExteraSettings.bubbleTail != "none")
 }
 
 public func messageBubbleImage(maxCornerRadius: CGFloat, minCornerRadius: CGFloat, incoming: Bool, fillColor: UIColor, strokeColor: UIColor, neighbors: MessageBubbleImageNeighbors, shadow: PresentationThemeBubbleShadow?, wallpaper: TelegramWallpaper, knockout knockoutValue: Bool, mask: Bool = false, extendedEdges: Bool = false, onlyOutline: Bool = false, onlyShadow: Bool = false, alwaysFillColor: Bool = false) -> UIImage {
+    // exteraGram: translucent "glass" bubbles let the wallpaper show through
+    let fillColor = (ExteraSettings.glassBubbles && !mask) ? fillColor.withMultipliedAlpha(0.62) : fillColor
     let topLeftRadius: CGFloat
     let topRightRadius: CGFloat
     let bottomLeftRadius: CGFloat
@@ -189,6 +191,9 @@ public func messageBubbleImage(maxCornerRadius: CGFloat, minCornerRadius: CGFloa
         drawTail = false
     }
     
+    // exteraGram: bubbles without tails
+    let drawTailValue = drawTail && ExteraSettings.bubbleTail != "none"
+    
     let fixedMainDiameter: CGFloat = 33.0
     let innerSize = CGSize(width: fixedMainDiameter + 6.0, height: fixedMainDiameter)
     let strokeInset: CGFloat = 1.0
@@ -223,7 +228,7 @@ public func messageBubbleImage(maxCornerRadius: CGFloat, minCornerRadius: CGFloa
         context.addLine(to: CGPoint(x: 0.0, y: topLeftRadius))
         context.fillPath()
         
-        if drawTail {
+        if drawTailValue {
             if maxCornerRadius >= minRadiusForFullTailCorner {
                 context.move(to: CGPoint(x: bottomEllipse.minX, y: bottomEllipse.midY))
                 context.addQuadCurve(to: CGPoint(x: bottomEllipse.midX, y: bottomEllipse.maxY), control: CGPoint(x: bottomEllipse.minX, y: bottomEllipse.maxY))
@@ -276,7 +281,7 @@ public func messageBubbleImage(maxCornerRadius: CGFloat, minCornerRadius: CGFloa
         context.closePath()
         context.strokePath()
         
-        if drawTail {
+        if drawTailValue {
             let outlineBottomEllipse = bottomEllipse.insetBy(dx: -borderOffset, dy: -borderOffset)
             let outlineInnerTopEllipse = topEllipse.insetBy(dx: borderOffset, dy: borderOffset)
             

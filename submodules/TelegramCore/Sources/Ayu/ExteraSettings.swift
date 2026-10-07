@@ -66,6 +66,101 @@ public final class ExteraSettings {
         set { self.set(newValue, "localVoiceTranscription") }
     }
 
+    // MARK: Customization
+
+    private static func string(_ key: String, _ defaultValue: String) -> String {
+        return self.defaults.string(forKey: "extera." + key) ?? defaultValue
+    }
+
+    // "text" (titleText), "name", "username" or "none"
+    public static var titleMode: String {
+        get { return self.string("titleMode", "text") }
+        set { self.set(newValue, "titleMode") }
+    }
+
+    // Account name / username, cached for the chat list title.
+    public static var cachedAccountName: String {
+        get { return self.string("cachedAccountName", "") }
+        set { self.defaults.set(newValue, forKey: "extera.cachedAccountName") }
+    }
+
+    public static var cachedAccountUsername: String {
+        get { return self.string("cachedAccountUsername", "") }
+        set { self.defaults.set(newValue, forKey: "extera.cachedAccountUsername") }
+    }
+
+    public static func chatListTitle(defaultTitle: String) -> String {
+        switch self.titleMode {
+        case "name":
+            return self.cachedAccountName.isEmpty ? defaultTitle : self.cachedAccountName
+        case "username":
+            return self.cachedAccountUsername.isEmpty ? defaultTitle : "@" + self.cachedAccountUsername
+        case "none":
+            return " "
+        default:
+            return self.titleText.isEmpty ? defaultTitle : self.titleText
+        }
+    }
+
+    public static var compactChatList: Bool {
+        get { return self.bool("compactChatList", false) }
+        set { self.set(newValue, "compactChatList") }
+    }
+
+    public static var hideStories: Bool {
+        get { return self.bool("hideStories", false) }
+        set { self.set(newValue, "hideStories") }
+    }
+
+    // "circle" or "rounded"
+    public static var avatarShape: String {
+        get { return self.string("avatarShape", "circle") }
+        set { self.set(newValue, "avatarShape") }
+    }
+
+    public static var hideContactsTab: Bool {
+        get { return self.bool("hideContactsTab", false) }
+        set { self.set(newValue, "hideContactsTab") }
+    }
+
+    public static var hideCallsTab: Bool {
+        get { return self.bool("hideCallsTab", false) }
+        set { self.set(newValue, "hideCallsTab") }
+    }
+
+    public static var chatsTabFirst: Bool {
+        get { return self.bool("chatsTabFirst", false) }
+        set { self.set(newValue, "chatsTabFirst") }
+    }
+
+    // "default" or "none"
+    public static var bubbleTail: String {
+        get { return self.string("bubbleTail", "default") }
+        set { self.set(newValue, "bubbleTail") }
+    }
+
+    public static var glassBubbles: Bool {
+        get { return self.bool("glassBubbles", false) }
+        set { self.set(newValue, "glassBubbles") }
+    }
+
+    // "compact", "default" or "airy"
+    public static var chatDensity: String {
+        get { return self.string("chatDensity", "default") }
+        set { self.set(newValue, "chatDensity") }
+    }
+
+    public static var hideMessageTime: Bool {
+        get { return self.bool("hideMessageTime", false) }
+        set { self.set(newValue, "hideMessageTime") }
+    }
+
+    // Read by Display's Font at launch: "regular", "round", "serif" or "monospace"
+    public static var fontDesign: String {
+        get { return self.string("fontDesign", "regular") }
+        set { self.set(newValue, "fontDesign") }
+    }
+
     // MARK: Apple Intelligence (iOS only)
 
     // "Коротко": on-device chat summary with Apple's Foundation Models.

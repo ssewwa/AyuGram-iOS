@@ -36,6 +36,16 @@ public func chatMessageItemLayoutConstants(_ constants: (ChatMessageItemLayoutCo
     result.text.bubbleInsets.left = textInset
     result.text.bubbleInsets.right = textInset
     result.instantVideo.dimensions = params.width > 320.0 ? constants.1.instantVideo.dimensions : constants.0.instantVideo.dimensions
+    // exteraGram: chat density
+    switch ExteraSettings.chatDensity {
+    case "compact":
+        result.bubble.defaultSpacing = 0.0
+    case "airy":
+        result.bubble.defaultSpacing += 6.0
+        result.bubble.mergedSpacing += 3.0
+    default:
+        break
+    }
     return result
 }
 
