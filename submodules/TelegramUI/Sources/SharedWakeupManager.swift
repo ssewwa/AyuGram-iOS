@@ -306,6 +306,8 @@ public final class SharedWakeupManager {
                 return
             }
             strongSelf.pendingMediaUploadsByKey = pendingMediaUploadsByKey
+            // exteraGram: upload progress in the Dynamic Island
+            ExteraUploadLiveActivity.update(progresses: Array(pendingMediaUploadsByKey.values))
             strongSelf.updateBackgroundProcessingTaskStateFromPendingMediaUploads()
         })
         

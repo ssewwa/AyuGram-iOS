@@ -43,9 +43,6 @@ private func ayuGhostSettingsController(context: AccountContext) -> ViewControll
                 .toggle(title: "Уходить в офлайн", symbol: nil, value: AyuSettings.sendOfflinePacketAfterOnline, update: { AyuSettings.sendOfflinePacketAfterOnline = $0 }),
                 .toggle(title: "Читать чат после ответа", symbol: nil, value: AyuSettings.markReadAfterSend, update: { AyuSettings.markReadAfterSend = $0 }),
             ],
-            [
-                .toggle(title: "Значок в Dynamic Island", symbol: "capsule", value: AyuGhostLiveActivity.isEnabled, update: { AyuGhostLiveActivity.isEnabled = $0 }),
-            ],
         ]
     })
 }

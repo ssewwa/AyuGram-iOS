@@ -16,7 +16,6 @@ public final class AyuSettings {
     private static func set(_ value: Bool, _ key: String) {
         self.defaults.set(value, forKey: key)
         NotificationCenter.default.post(name: AyuSettings.didChangeNotification, object: nil)
-        AyuGhostLiveActivity.sync()
     }
 
     // MARK: Ghost essentials

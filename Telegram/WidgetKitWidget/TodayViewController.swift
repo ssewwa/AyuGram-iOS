@@ -950,13 +950,13 @@ struct AllWidgets: WidgetBundle {
 }
 
 #if canImport(ActivityKit)
-// AyuGram: same widgets plus the ghost mode Live Activity
+// exteraGram: same widgets plus the upload progress Live Activity
 @available(iOSApplicationExtension 16.2, iOS 16.2, *)
 struct AllWidgetsWithLiveActivities: WidgetBundle {
    var body: some Widget {
         Static_Widget()
         Static_AvatarsWidget()
-        AyuGhostLiveActivityWidget()
+        ExteraUploadLiveActivityWidget()
    }
 }
 #endif

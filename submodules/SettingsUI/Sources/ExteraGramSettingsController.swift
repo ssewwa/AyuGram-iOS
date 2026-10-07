@@ -55,6 +55,10 @@ private func exteraGeneralController(context: AccountContext) -> ViewController 
                 .toggle(title: "Скрывать при записи экрана", symbol: "record.circle", value: ExteraSettings.hideOnScreenCapture, update: { ExteraSettings.hideOnScreenCapture = $0 }),
                 .toggle(title: "Размывать в переключателе", symbol: "square.stack", value: ExteraSettings.hideInAppSwitcher, update: { ExteraSettings.hideInAppSwitcher = $0 }),
             ],
+            [
+                .header("Dynamic Island"),
+                .toggle(title: "Прогресс отправки", symbol: "arrow.up.circle", value: ExteraUploadLiveActivity.isEnabled, update: { ExteraUploadLiveActivity.isEnabled = $0 }),
+            ],
         ]
     })
 }
