@@ -181,7 +181,12 @@ public func stringForMessageTimestampStatus(
     } else if let forwardInfo = message.forwardInfo, forwardInfo.flags.contains(.isImported) {
         dateText = strings.Message_ImportedDateFormat(dateStringForDay(strings: strings, dateTimeFormat: dateTimeFormat, timestamp: forwardInfo.date), stringForMessageTimestamp(timestamp: forwardInfo.date, dateTimeFormat: dateTimeFormat), dateText).string
     }
-    
+
+    // AyuGram: mark messages that were deleted by the other side
+    if message.ayuDeletedDate != nil {
+        dateText = "\(AyuSettings.deletedMark) \(dateText)"
+    }
+
     var authorTitle: String?
     if let author = message.author, case .user = author {
         if let peer = message.peers[message.id.peerId] as? TelegramChannel, case .broadcast = peer.info {

@@ -244,6 +244,11 @@ func settingsItems(data: PeerInfoScreenData?, context: AccountContext, presentat
         interaction.openSettings(.powerSaving)
     }))
     
+    // AyuGram
+    items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 50, label: .text(AyuSettings.isGhostModeActive ? "Ghost" : ""), text: "AyuGram", icon: PresentationResourcesSettings.security, action: {
+        interaction.openSettings(.ayugram)
+    }))
+    
     let languageName = presentationData.strings.primaryComponent.localizedName
     items[.advanced]!.append(PeerInfoScreenDisclosureItem(id: 4, label: .text(languageName.isEmpty ? presentationData.strings.Localization_LanguageName : languageName), text: presentationData.strings.Settings_AppLanguage, icon: PresentationResourcesSettings.language, action: {
         interaction.openSettings(.language)

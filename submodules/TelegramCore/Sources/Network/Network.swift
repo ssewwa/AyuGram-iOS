@@ -1083,7 +1083,48 @@ public final class Network: NSObject, MTRequestMessageServiceDelegate {
         }
     }
     
+    // AyuGram: ghost mode hook, see Ayu/AyuGhost.swift
     public func requestWithAdditionalInfo<T>(_ data: (FunctionDescription, Buffer, DeserializeFunctionResponse<T>), info: NetworkRequestAdditionalInfo, tag: NetworkRequestDependencyTag? = nil, automaticFloodWait: Bool = true, onFloodWaitError: ((String) -> Void)? = nil) -> Signal<NetworkRequestResult<T>, MTRpcError> {
+        if let intercepted = ayuGhostIntercept(data) {
+            return intercepted
+            |> map { result -> NetworkRequestResult<T> in
+                return .result(result)
+            }
+        }
+        let signal = self.ayuOriginalRequestWithAdditionalInfo(data, info: info, tag: tag, automaticFloodWait: automaticFloodWait, onFloodWaitError: onFloodWaitError)
+        if ayuIsSendMessageRequest(functionName: data.0.name) {
+            return signal
+            |> afterCompleted { [weak self] in
+                self?.ayuSendOfflineAfterSendIfNeeded()
+            }
+        }
+        return signal
+    }
+    
+    // AyuGram: ghost mode hook, see Ayu/AyuGhost.swift
+    public func request<T>(_ data: (FunctionDescription, Buffer, DeserializeFunctionResponse<T>), tag: NetworkRequestDependencyTag? = nil, automaticFloodWait: Bool = true, onFloodWaitError: ((String) -> Void)? = nil) -> Signal<T, MTRpcError> {
+        if let intercepted = ayuGhostIntercept(data) {
+            return intercepted
+        }
+        let signal = self.ayuOriginalRequest(data, tag: tag, automaticFloodWait: automaticFloodWait, onFloodWaitError: onFloodWaitError)
+        if ayuIsSendMessageRequest(functionName: data.0.name) {
+            return signal
+            |> afterCompleted { [weak self] in
+                self?.ayuSendOfflineAfterSendIfNeeded()
+            }
+        }
+        return signal
+    }
+    
+    // AyuGram: the server marks us online when we send a message; go back offline right after.
+    private func ayuSendOfflineAfterSendIfNeeded() {
+        guard AyuSettings.sendOfflinePacketAfterOnline else {
+            return
+        }
+        let _ = self.ayuOriginalRequest(Api.functions.account.updateStatus(offline: .boolTrue)).start()
+    }
+    
+    private func ayuOriginalRequestWithAdditionalInfo<T>(_ data: (FunctionDescription, Buffer, DeserializeFunctionResponse<T>), info: NetworkRequestAdditionalInfo, tag: NetworkRequestDependencyTag?, automaticFloodWait: Bool, onFloodWaitError: ((String) -> Void)?) -> Signal<NetworkRequestResult<T>, MTRpcError> {
         let requestService = self.requestService
         return Signal { subscriber in
             let request = MTRequest()
@@ -1155,7 +1196,7 @@ public final class Network: NSObject, MTRequestMessageServiceDelegate {
         }
     }
     
-    public func request<T>(_ data: (FunctionDescription, Buffer, DeserializeFunctionResponse<T>), tag: NetworkRequestDependencyTag? = nil, automaticFloodWait: Bool = true, onFloodWaitError: ((String) -> Void)? = nil) -> Signal<T, MTRpcError> {
+    private func ayuOriginalRequest<T>(_ data: (FunctionDescription, Buffer, DeserializeFunctionResponse<T>), tag: NetworkRequestDependencyTag? = nil, automaticFloodWait: Bool = true, onFloodWaitError: ((String) -> Void)? = nil) -> Signal<T, MTRpcError> {
         let requestService = self.requestService
         return Signal { subscriber in
             let request = MTRequest()

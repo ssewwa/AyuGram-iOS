@@ -43,6 +43,8 @@ private final class AccountPresenceManagerImpl {
     }
     
     private func updatePresence(_ isOnline: Bool) {
+        // AyuGram: with "send online" disabled always report offline (same as Android).
+        let isOnline = isOnline && AyuSettings.sendOnlinePackets
         let request: Signal<Api.Bool, MTRpcError>
         if isOnline {
             let timer = SignalKitTimer(timeout: 30.0, repeat: false, completion: { [weak self] in
