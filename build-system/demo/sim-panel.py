@@ -16,6 +16,10 @@ from urllib.parse import parse_qs, urlparse
 UDID = sys.argv[1] if len(sys.argv) > 1 else open(os.path.expanduser("~/demo-udid")).read().strip()
 PORT = 8080
 IDB = ["idb"]
+# The SSH tunnel is the bottleneck: a lighter stream keeps taps responsive
+FPS = os.environ.get("PANEL_FPS", "15")
+SCALE = os.environ.get("PANEL_SCALE", "0.4")
+QUALITY = os.environ.get("PANEL_QUALITY", "0.45")
 
 
 def idb(*args):
@@ -42,8 +46,8 @@ class Frames:
 
     def run(self):
         while True:
-            proc = subprocess.Popen(IDB + ["video-stream", "--udid", UDID, "--format", "mjpeg", "--fps", "30",
-                                           "--compression-quality", "0.6", "--scale-factor", "0.5"],
+            proc = subprocess.Popen(IDB + ["video-stream", "--udid", UDID, "--format", "mjpeg", "--fps", FPS,
+                                           "--compression-quality", QUALITY, "--scale-factor", SCALE],
                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             buf = b""
             while True:
