@@ -1,0 +1,116 @@
+# AyuGram iOS — Codemagic CI
+# Put this file in the root of the AyuGram iOS repo (a fork of TelegramMessenger/Telegram-iOS).
+#
+# Environment variable groups to create in Codemagic (App settings → Environment variables):
+#   telegram_api : TG_API_ID, TG_API_HASH            (from https://my.telegram.org/apps, a separate key for iOS)
+#   saucelabs    : SAUCE_USERNAME, SAUCE_ACCESS_KEY, SAUCE_REGION (us-west-1 | us-east-4 | eu-central-1)
+
+definitions:
+  env: &env
+    xcode: 26.2            # must match "xcode" in versions.json
+    groups:
+      - telegram_api
+      - saucelabs
+  cache: &cache
+    cache_paths:
+      - $HOME/telegram-bazel-cache
+  scripts:
+    - &submodules
+      name: Fetch submodules
+      script: git submodule update --init --recursive --depth 1 --jobs 8
+    - &config
+      name: Generate build configuration
+      script: |
+        # The bundle_id/team_id must stay as in fake-codesigning: its profiles only match
+        # C67CF9S4VU.ph.telegra.Telegraph. Sauce Labs re-signs the IPA anyway.
+        # For a real release swap these for our own bundle id + provisioning profiles.
+        cat > build-system/ayugram-ci-configuration.json <<EOF
+        {
+          "bundle_id": "ph.telegra.Telegraph",
+          "api_id": "$TG_API_ID",
+          "api_hash": "$TG_API_HASH",
+          "team_id": "C67CF9S4VU",
+          "app_center_id": "0",
+          "is_internal_build": "true",
+          "is_appstore_build": "false",
+          "appstore_id": "0",
+          "app_specific_url_scheme": "tg",
+          "premium_iap_product_id": "",
+          "enable_siri": false,
+          "enable_icloud": false
+        }
+        EOF
+
+workflows:
+  # Device build → IPA → Sauce Labs real devices
+  ios-device-sauce:
+    name: AyuGram iOS (device IPA → Sauce Labs)
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment: *env
+    cache: *cache
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+      cancel_previous_builds: true
+    scripts:
+      - *submodules
+      - *config
+      - name: Build IPA
+        script: |
+          set -euo pipefail
+          python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
+          python3 -u build-system/Make/Make.py \
+            --cacheDir="$HOME/telegram-bazel-cache" \
+            --overrideXcodeVersion \
+            build \
+            --configurationPath=build-system/ayugram-ci-configuration.json \
+            --codesigningInformationPath=build-system/fake-codesigning \
+            --configuration=release_arm64 \
+            --buildNumber="$BUILD_NUMBER" \
+            --outputBuildArtifactsPath=build/artifacts
+          mv build/artifacts/Telegram.ipa "build/artifacts/AyuGram-$BUILD_NUMBER.ipa"
+      - name: Upload to Sauce Labs
+        script: |
+          set -euo pipefail
+          IPA="build/artifacts/AyuGram-$BUILD_NUMBER.ipa"
+          RESPONSE=$(curl -sS --fail -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
+            -X POST "https://api.${SAUCE_REGION}.saucelabs.com/v1/storage/upload" \
+            -F "payload=@$IPA" \
+            -F "name=AyuGram-$BUILD_NUMBER.ipa")
+          APP_ID=$(echo "$RESPONSE" | python3 -c 'import json,sys; print(json.load(sys.stdin)["item"]["id"])')
+          echo "Sauce Labs app id: $APP_ID"
+          echo "Appium capability: appium:app = storage:$APP_ID"
+    artifacts:
+      - build/artifacts/*.ipa
+      - build/artifacts/Telegram.DSYMs.zip
+
+  # Simulator build (no signing). Manual start only: Sauce simulators may not run sim_arm64 builds,
+  # use it for quick checks / Appium scripts if the device flow is blocked.
+  ios-simulator:
+    name: AyuGram iOS (simulator .app)
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment: *env
+    cache: *cache
+    scripts:
+      - *submodules
+      - *config
+      - name: Build for simulator
+        script: |
+          set -euo pipefail
+          python3 -u build-system/Make/Make.py \
+            --cacheDir="$HOME/telegram-bazel-cache" \
+            --overrideXcodeVersion \
+            build \
+            --configurationPath=build-system/ayugram-ci-configuration.json \
+            --codesigningInformationPath=build-system/fake-codesigning \
+            --configuration=debug_sim_arm64 \
+            --buildNumber="$BUILD_NUMBER"
+          mkdir -p build/sim && cd build/sim
+          unzip -q -o ../../bazel-bin/Telegram/Telegram.ipa
+          cd Payload && zip -qry "../../AyuGram-sim-$BUILD_NUMBER.zip" Telegram.app
+    artifacts:
+      - build/AyuGram-sim-*.zip
