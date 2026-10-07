@@ -19,9 +19,13 @@ definitions:
       name: Fetch submodules
       script: git submodule update --init --recursive --depth 1 --jobs 8
     - &metal
-      name: Install Metal Toolchain
-      # Xcode 26 ships without the Metal compiler; Telegram compiles .metal shaders
-      script: xcodebuild -downloadComponent MetalToolchain
+      name: Prepare toolchain
+      script: |
+        # Xcode 26 ships without the Metal compiler; Telegram compiles .metal shaders
+        xcodebuild -downloadComponent MetalToolchain
+        # TDLib's CMake picks up Homebrew's ccache, but Bazel's sandbox PATH can't run it
+        brew uninstall --ignore-dependencies ccache 2>/dev/null || true
+        if command -v ccache >/dev/null; then sudo rm -f "$(command -v ccache)"; fi
     - &config
       name: Generate build configuration
       script: |
