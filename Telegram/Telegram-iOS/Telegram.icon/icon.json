@@ -17,7 +17,15 @@
           ],
           "glass": true,
           "image-name": "Arrow.svg",
-          "name": "Arrow"
+          "name": "Arrow",
+          "fill-specializations": [
+            {
+              "appearance": "dark",
+              "value": {
+                "automatic-gradient": "srgb:0.90980,0.18824,0.18824,1.00000"
+              }
+            }
+          ]
         },
         {
           "blend-mode-specializations": [
@@ -31,7 +39,16 @@
           ],
           "glass": false,
           "image-name": "Background.svg",
-          "name": "Background"
+          "name": "Background",
+          "hidden-specializations": [
+            {
+              "value": false
+            },
+            {
+              "appearance": "dark",
+              "value": true
+            }
+          ]
         }
       ],
       "lighting": "combined",
