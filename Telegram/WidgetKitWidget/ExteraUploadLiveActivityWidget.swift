@@ -10,6 +10,7 @@ import TelegramCore
 #if canImport(ActivityKit)
 private let exteraRed = Color(red: 0.91, green: 0.19, blue: 0.19)
 
+@available(iOSApplicationExtension 16.2, iOS 16.2, *)
 private func uploadTitle(_ state: ExteraUploadActivityAttributes.ContentState) -> String {
     if state.finished {
         return "Отправлено"
@@ -17,6 +18,7 @@ private func uploadTitle(_ state: ExteraUploadActivityAttributes.ContentState) -
     return state.count > 1 ? "Отправка · \(state.count)" : "Отправка"
 }
 
+@available(iOSApplicationExtension 16.2, iOS 16.2, *)
 private struct UploadRing: View {
     let state: ExteraUploadActivityAttributes.ContentState
     let size: CGFloat

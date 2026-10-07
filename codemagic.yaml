@@ -160,7 +160,7 @@ workflows:
   # Stop it early with: touch ~/stop-demo   (on the Mac). Simulator recordings on the Desktop
   # (Simulator → File → Record Screen) are collected as artifacts.
   ios-demo:
-    name: exteraGram demo (Simulator over VNC)
+    name: exteraGram demo (Simulator panel)
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment:
@@ -199,6 +199,16 @@ workflows:
           xcrun simctl spawn "$UDID" notifyutil -p com.apple.BiometricKit.enrollmentChanged || true
           xcrun simctl launch "$UDID" ph.telegra.Telegraph
           echo "$UDID" > ~/demo-udid
+      - name: Start simulator panel
+        script: |
+          # Live stream + controls in a browser (build-system/demo/sim-panel.py), reached through an SSH tunnel to port 8080
+          brew tap facebook/fb >/dev/null 2>&1 || true
+          brew install facebook/fb/idb-companion >/dev/null 2>&1 || true
+          pip3 install --quiet --break-system-packages fb-idb 2>/dev/null || pip3 install --quiet fb-idb
+          nohup python3 build-system/demo/sim-panel.py "$(cat ~/demo-udid)" > ~/sim-panel.log 2>&1 &
+          disown || true
+          sleep 8
+          curl -sS -o /dev/null -w "panel HTTP %{http_code}\n" http://127.0.0.1:8080/ || tail -20 ~/sim-panel.log
       - name: Keep the Mac running for the demo
         script: |
           END=$(( $(date +%s) + 100 * 60 ))
