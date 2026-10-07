@@ -107,6 +107,14 @@ public struct LocallyTranscribedAudio {
 public func transcribeAudio(path: String, appLocale: String) -> Signal<LocallyTranscribedAudio?, NoError> {
     var signals: [Signal<TranscriptionResult?, NoError>] = []
     var locales: [String] = []
+    // exteraGram: also try the app's interface language (e.g. Russian UI on an English iPhone),
+    // the result with the higher confidence wins
+    if !appLocale.isEmpty {
+        let appLocaleIdentifier = appLocale.contains("-") || appLocale.contains("_") ? appLocale : (appLocale == "en" ? "en-US" : "\(appLocale)-\(appLocale.uppercased())")
+        if !Locale.current.identifier.hasPrefix(appLocale) {
+            locales.append(appLocaleIdentifier)
+        }
+    }
     if !locales.contains(Locale.current.identifier) {
         locales.append(Locale.current.identifier)
     }
