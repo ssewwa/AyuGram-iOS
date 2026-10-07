@@ -164,7 +164,7 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment:
-      xcode: 26.2
+      xcode: 27.1 # iOS 27 simulator runtime; the app itself is still built with 26.2
       groups:
         - codemagic_api
     scripts:
@@ -189,7 +189,7 @@ workflows:
           import json, sys
           rs = [r for r in json.load(sys.stdin)["runtimes"] if r.get("isAvailable") and r["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS")]
           print(sorted(rs, key=lambda r: r["version"])[-1]["identifier"])')
-          UDID=$(xcrun simctl create "exteraGram demo" "iPhone 17 Pro Max" "$RUNTIME")
+          UDID=$(xcrun simctl create "exteraGram demo" "iPhone 18 Pro Max" "$RUNTIME" 2>/dev/null || xcrun simctl create "exteraGram demo" "iPhone 17 Pro Max" "$RUNTIME")
           xcrun simctl boot "$UDID"
           open -a Simulator --args -CurrentDeviceUDID "$UDID"
           xcrun simctl bootstatus "$UDID" -b
