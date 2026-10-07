@@ -49,12 +49,6 @@ workflows:
     max_build_duration: 120
     environment: *env
     cache: *cache
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: master
-      cancel_previous_builds: true
     scripts:
       - *submodules
       - *config
@@ -75,6 +69,10 @@ workflows:
       - name: Upload to Sauce Labs
         script: |
           set -euo pipefail
+          if [ -z "${SAUCE_USERNAME:-}" ] || [ -z "${SAUCE_ACCESS_KEY:-}" ]; then
+            echo "Sauce Labs is not configured, skipping upload"
+            exit 0
+          fi
           IPA="build/artifacts/AyuGram-$BUILD_NUMBER.ipa"
           RESPONSE=$(curl -sS --fail -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
             -X POST "https://api.${SAUCE_REGION}.saucelabs.com/v1/storage/upload" \
@@ -116,6 +114,10 @@ workflows:
       - name: Upload to Sauce Labs
         script: |
           set -euo pipefail
+          if [ -z "${SAUCE_USERNAME:-}" ] || [ -z "${SAUCE_ACCESS_KEY:-}" ]; then
+            echo "Sauce Labs is not configured, skipping upload"
+            exit 0
+          fi
           ZIP="build/AyuGram-sim-$BUILD_NUMBER.zip"
           RESPONSE=$(curl -sS --fail -u "$SAUCE_USERNAME:$SAUCE_ACCESS_KEY" \
             -X POST "https://api.${SAUCE_REGION}.saucelabs.com/v1/storage/upload" \
