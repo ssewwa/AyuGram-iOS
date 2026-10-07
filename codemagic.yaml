@@ -191,12 +191,15 @@ workflows:
           rs = [r for r in json.load(sys.stdin)["runtimes"] if r.get("isAvailable") and r["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS")]
           r = sorted(rs, key=lambda r: [int(x) for x in r["version"].split(".")])[-1]
           types = [t for t in r.get("supportedDeviceTypes", []) if t.get("productFamily") == "iPhone"]
-          best = [t for t in types if "Pro Max" in t["name"]] or types
+          print("iPhones:", ", ".join(t["name"] for t in types), file=sys.stderr)
+          plain = [t for t in types if "Duo" not in t["name"] and "Fold" not in t["name"]]
+          best = [t for t in plain if "Pro Max" in t["name"]] or [t for t in plain if "Pro" in t["name"]] or plain or types
           print(r["identifier"], best[-1]["identifier"])')"
           echo "Runtime: $RUNTIME, device: $DEVICE"
           UDID=$(xcrun simctl create "exteraGram demo" "$DEVICE" "$RUNTIME")
           xcrun simctl boot "$UDID"
-          open -a Simulator --args -CurrentDeviceUDID "$UDID"
+          # The window is optional: the panel streams the screen directly
+          open -a "$(xcode-select -p)/Applications/Simulator.app" --args -CurrentDeviceUDID "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" demo/Telegram.app
           # Face ID enrolled, so protected chats ask for Face ID (Simulator → Features → Face ID → Matching Face)
