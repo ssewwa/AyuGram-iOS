@@ -149,3 +149,60 @@ workflows:
       - *pack_cache
     artifacts:
       - build/AyuGram-sim-*.zip
+
+  # Demo machine: no build. Installs the latest simulator build into an iPhone simulator and keeps
+  # the Mac running so it can be used over VNC (start the build with remote access enabled).
+  # Stop it early with: touch ~/stop-demo   (on the Mac). Simulator recordings on the Desktop
+  # (Simulator → File → Record Screen) are collected as artifacts.
+  ios-demo:
+    name: exteraGram demo (Simulator over VNC)
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      xcode: 26.2
+      groups:
+        - codemagic_api
+    scripts:
+      - name: Download latest simulator build
+        script: |
+          set -euo pipefail
+          APP_ID="${CM_PROJECT_ID:-6ac5d8d3276a02cb991e88a0}"
+          URL=$(curl -sS -H "x-auth-token: $CM_API_TOKEN" "https://api.codemagic.io/builds?appId=$APP_ID&workflowId=ios-simulator&branch=master" | python3 -c '
+          import json, sys
+          for b in json.load(sys.stdin).get("builds", []):
+              for a in b.get("artefacts") or []:
+                  if b.get("status") in ("finished", "canceled") and a.get("name", "").endswith(".zip"):
+                      print(a["url"]); sys.exit(0)
+          sys.exit("no simulator build found")')
+          curl -sS -L -H "x-auth-token: $CM_API_TOKEN" "$URL" -o demo.zip
+          rm -rf demo && mkdir demo && unzip -q demo.zip -d demo
+          ls demo
+      - name: Boot simulator and install exteraGram
+        script: |
+          set -euo pipefail
+          RUNTIME=$(xcrun simctl list runtimes -j | python3 -c '
+          import json, sys
+          rs = [r for r in json.load(sys.stdin)["runtimes"] if r.get("isAvailable") and r["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS")]
+          print(sorted(rs, key=lambda r: r["version"])[-1]["identifier"])')
+          UDID=$(xcrun simctl create "exteraGram demo" "iPhone 17 Pro Max" "$RUNTIME")
+          xcrun simctl boot "$UDID"
+          open -a Simulator --args -CurrentDeviceUDID "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" demo/Telegram.app
+          # Face ID enrolled, so protected chats ask for Face ID (Simulator → Features → Face ID → Matching Face)
+          xcrun simctl spawn "$UDID" notifyutil -s com.apple.BiometricKit.enrollmentChanged 1 || true
+          xcrun simctl spawn "$UDID" notifyutil -p com.apple.BiometricKit.enrollmentChanged || true
+          xcrun simctl launch "$UDID" ph.telegra.Telegraph
+          echo "$UDID" > ~/demo-udid
+      - name: Keep the Mac running for the demo
+        script: |
+          END=$(( $(date +%s) + 100 * 60 ))
+          while [ ! -f ~/stop-demo ] && [ "$(date +%s)" -lt "$END" ]; do
+            echo "$(date +%H:%M) demo running, $(( (END - $(date +%s)) / 60 )) min left"
+            sleep 60
+          done
+          mkdir -p demo-recordings
+          cp ~/Desktop/*.mov ~/Desktop/*.mp4 demo-recordings/ 2>/dev/null || true
+          ls -la demo-recordings
+    artifacts:
+      - demo-recordings/*
