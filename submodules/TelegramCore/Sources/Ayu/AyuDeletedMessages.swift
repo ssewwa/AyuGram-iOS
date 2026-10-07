@@ -30,6 +30,12 @@ public extension Message {
     }
 }
 
+public extension EngineMessage {
+    var ayuDeletedDate: Int32? {
+        return self._asMessage().ayuDeletedDate
+    }
+}
+
 // Called while replaying server deletions. Marks the messages we keep and returns the ids
 // that still have to be deleted for real.
 func ayuKeepDeletedMessages(transaction: Transaction, ids: [MessageId]) -> [MessageId] {
