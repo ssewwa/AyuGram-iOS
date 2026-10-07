@@ -1,6 +1,29 @@
 # CLAUDE.md
 
-This file provides guidance to AI assistants when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## exteraGram / AyuGram fork (read first)
+
+This repo (`ssewwa/AyuGram-iOS`, branch `master`) is Telegram-iOS plus the AyuGram and exteraGram features. Display name is **exteraGram**; the bundle id stays `ph.telegra.Telegraph` because CI signs with `build-system/fake-codesigning`. The upstream sections below still apply; this section covers what the fork adds.
+
+**Building happens on Codemagic, not locally** (development machines for this fork are Linux, without Xcode). `codemagic.yaml` workflows, all started through the Codemagic API (app id `6ac5d8d3276a02cb991e88a0`), never uploaded anywhere — artifacts only:
+- `ios-simulator` — `debug_sim_arm64`, produces `AyuGram-sim-<n>.zip` (the unzipped `Telegram.app`). The usual way to verify that code compiles.
+- `ios-device` — `release_arm64` IPA for sideloading.
+- `ios-demo` — Xcode 27.1 Mac with an iOS 27 simulator: downloads the latest `ios-simulator` artifact, installs it, starts `build-system/demo/sim-panel.py` (MJPEG stream + taps/swipes/text via `idb`, on `127.0.0.1:8080`, reached through the Codemagic SSH remote access tunnel) and keeps the Mac alive up to 40 min; `touch ~/stop-demo` ends it.
+
+CI details that are easy to break: `build-system/ayugram-ci-configuration.json` is generated in CI from the `telegram_api` variable group (never commit api id/hash); the Bazel cache is a zstd archive restored/packed by the `Restore Bazel cache` / `Pack Bazel cache` steps, and Codemagic saves caches only after a **successful** build and never overwrites one, so the pack step deletes the old cache through the API and waits until it is gone. A build stops at the first failing module, so one green module does not mean the rest compiles.
+
+**Where the fork code lives**
+- `submodules/TelegramCore/Sources/Ayu/` — settings and logic with no UI: `AyuSettings` (ghost mode, saved deleted messages; keys match AyuGram for Android), `ExteraSettings` (all exteraGram options, `UserDefaults` keys prefixed `extera.`), `AyuGhost` (request interception), `AyuDeletedMessages`, `AyuReadHistory`, `ExteraChatLock` (Face ID per chat), `ExteraChatSummary` («Коротко», Foundation Models), `ExteraUploadLiveActivity` (upload progress Live Activity; drawn by `Telegram/WidgetKitWidget/ExteraUploadLiveActivityWidget.swift`).
+- `submodules/SettingsUI/Sources/ExteraSettingsKit.swift` — declarative layer over `ItemListController` (`ExteraRow`: hero / header / nav / link / toggle / choice / input / note). The AyuGram and exteraGram screens (`AyuGramSettingsController.swift`, `ExteraGramSettingsController.swift`, `ExteraAppearanceSettings.swift`) follow the Android clients' layout: hero header, «Категории» opening sub-pages, «Ссылки». Keep footers to one short line.
+- Hooks into upstream code are small edits marked with a `// exteraGram:` or `// AyuGram:` comment (find them with `grep -rn "// exteraGram:\|// AyuGram:" submodules Telegram`). Keep hooks minimal so upstream merges stay easy; put logic in the `Ayu/` files.
+
+**Fork-specific constraints**
+- TelegramCore must not import UIKit (see rule 7 below); the `Ayu/` files only use Foundation, Postbox, ActivityKit, FoundationModels. Display (`Font.swift`) cannot see TelegramCore, so it reads `extera.fontDesign` from `UserDefaults` directly.
+- The deployment target is below iOS 26: guard newer frameworks with `#if canImport(...)` + `@available` (ActivityKit 16.2, FoundationModels 26.0), and annotate every widget-extension type that touches them with `@available(iOSApplicationExtension 16.2, iOS 16.2, *)`.
+- `TelegramCore` targets use `-warnings-as-errors`; avoid patterns that only warn (e.g. `@unknown default` on frozen enums).
+- UI strings in fork screens are Russian.
+- Commits and PRs carry no Claude attribution.
 
 ## Build
 

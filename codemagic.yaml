@@ -97,7 +97,7 @@ workflows:
   ios-device:
     name: AyuGram iOS (device IPA)
     instance_type: mac_mini_m2
-    max_build_duration: 120
+    max_build_duration: 60
     environment: *env
     cache: *cache
     scripts:
@@ -128,7 +128,7 @@ workflows:
   ios-simulator:
     name: AyuGram iOS (simulator .app)
     instance_type: mac_mini_m2
-    max_build_duration: 120
+    max_build_duration: 60
     environment: *env
     cache: *cache
     scripts:
@@ -162,7 +162,7 @@ workflows:
   ios-demo:
     name: exteraGram demo (Simulator panel)
     instance_type: mac_mini_m2
-    max_build_duration: 120
+    max_build_duration: 60
     environment:
       xcode: 27.1 # iOS 27 simulator runtime; the app itself is still built with 26.2
       groups:
@@ -211,7 +211,7 @@ workflows:
           curl -sS -o /dev/null -w "panel HTTP %{http_code}\n" http://127.0.0.1:8080/ || tail -20 ~/sim-panel.log
       - name: Keep the Mac running for the demo
         script: |
-          END=$(( $(date +%s) + 100 * 60 ))
+          END=$(( $(date +%s) + 40 * 60 ))
           while [ ! -f ~/stop-demo ] && [ "$(date +%s)" -lt "$END" ]; do
             echo "$(date +%H:%M) demo running, $(( (END - $(date +%s)) / 60 )) min left"
             sleep 60
