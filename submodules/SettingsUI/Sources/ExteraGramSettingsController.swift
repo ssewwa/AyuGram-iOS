@@ -16,6 +16,9 @@ private final class ExteraGramSettingsControllerArguments {
     let updateHidePhoneNumber: (Bool) -> Void
     let updateShowIdAndDc: (Bool) -> Void
     let unlockAllChats: () -> Void
+    let updateLocalTranscription: (Bool) -> Void
+    let updateHideOnScreenCapture: (Bool) -> Void
+    let updateHideInAppSwitcher: (Bool) -> Void
 
     init(
         updateTitleText: @escaping (String) -> Void,
@@ -23,7 +26,10 @@ private final class ExteraGramSettingsControllerArguments {
         updateNumberRounding: @escaping (Bool) -> Void,
         updateHidePhoneNumber: @escaping (Bool) -> Void,
         updateShowIdAndDc: @escaping (Bool) -> Void,
-        unlockAllChats: @escaping () -> Void
+        unlockAllChats: @escaping () -> Void,
+        updateLocalTranscription: @escaping (Bool) -> Void,
+        updateHideOnScreenCapture: @escaping (Bool) -> Void,
+        updateHideInAppSwitcher: @escaping (Bool) -> Void
     ) {
         self.updateTitleText = updateTitleText
         self.updateTimeWithSeconds = updateTimeWithSeconds
@@ -31,6 +37,9 @@ private final class ExteraGramSettingsControllerArguments {
         self.updateHidePhoneNumber = updateHidePhoneNumber
         self.updateShowIdAndDc = updateShowIdAndDc
         self.unlockAllChats = unlockAllChats
+        self.updateLocalTranscription = updateLocalTranscription
+        self.updateHideOnScreenCapture = updateHideOnScreenCapture
+        self.updateHideInAppSwitcher = updateHideInAppSwitcher
     }
 }
 
@@ -39,6 +48,8 @@ private enum ExteraGramSettingsSection: Int32 {
     case appearance
     case profile
     case lockedChats
+    case voice
+    case screen
 }
 
 private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
@@ -60,6 +71,15 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
     case unlockAllChats(Int)
     case lockedChatsFooter(String)
 
+    case voiceHeader
+    case localTranscription(Bool)
+    case voiceFooter
+
+    case screenHeader
+    case hideOnScreenCapture(Bool)
+    case hideInAppSwitcher(Bool)
+    case screenFooter
+
     var section: ItemListSectionId {
         switch self {
         case .titleHeader, .titleText, .titleFooter:
@@ -70,6 +90,10 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
             return ExteraGramSettingsSection.profile.rawValue
         case .lockedChatsHeader, .unlockAllChats, .lockedChatsFooter:
             return ExteraGramSettingsSection.lockedChats.rawValue
+        case .voiceHeader, .localTranscription, .voiceFooter:
+            return ExteraGramSettingsSection.voice.rawValue
+        case .screenHeader, .hideOnScreenCapture, .hideInAppSwitcher, .screenFooter:
+            return ExteraGramSettingsSection.screen.rawValue
         }
     }
 
@@ -103,6 +127,20 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
             return 12
         case .lockedChatsFooter:
             return 13
+        case .voiceHeader:
+            return 14
+        case .localTranscription:
+            return 15
+        case .voiceFooter:
+            return 16
+        case .screenHeader:
+            return 17
+        case .hideOnScreenCapture:
+            return 18
+        case .hideInAppSwitcher:
+            return 19
+        case .screenFooter:
+            return 20
         }
     }
 
@@ -151,6 +189,26 @@ private enum ExteraGramSettingsControllerEntry: ItemListNodeEntry {
             })
         case let .lockedChatsFooter(biometryName):
             return ItemListTextItem(presentationData: presentationData, text: .plain("Зажми чат в списке и выбери «Защитить \(biometryName)». Такой чат откроется только после проверки, в списке вместо последнего сообщения будет «🔒 Чат защищён», а превью по долгому нажатию скроется. Чат снова закрывается, когда ты выходишь из приложения."), sectionId: self.section)
+        case .voiceHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ГОЛОСОВЫЕ", sectionId: self.section)
+        case let .localTranscription(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Расшифровка на устройстве", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateLocalTranscription(value)
+            })
+        case .voiceFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Кнопка «Расшифровать» под каждым голосовым, без Telegram Premium. Речь распознаёт сам iPhone — голос не отправляется в Telegram. Если для языка нет офлайн-модели, iOS может использовать серверы Apple."), sectionId: self.section)
+        case .screenHeader:
+            return ItemListSectionHeaderItem(presentationData: presentationData, text: "ЭКРАН", sectionId: self.section)
+        case let .hideOnScreenCapture(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Скрывать при записи экрана", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateHideOnScreenCapture(value)
+            })
+        case let .hideInAppSwitcher(value):
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: "Размывать в переключателе приложений", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                arguments.updateHideInAppSwitcher(value)
+            })
+        case .screenFooter:
+            return ItemListTextItem(presentationData: presentationData, text: .plain("Во время записи экрана, трансляции через AirPlay или показа экрана в созвоне приложение закрывается размытием. В переключателе приложений вместо переписки будет размытие. Обычные скриншоты iOS запретить не даёт."), sectionId: self.section)
         case .profileFooter:
             return ItemListTextItem(presentationData: presentationData, text: .plain("Номер не будет виден в шапке настроек — удобно для скриншотов. ID и дата-центр появятся в профилях людей, групп и каналов; нажми на строку, чтобы скопировать ID."), sectionId: self.section)
         }
@@ -177,6 +235,15 @@ private func exteraGramSettingsControllerEntries() -> [ExteraGramSettingsControl
     entries.append(.lockedChatsHeader)
     entries.append(.unlockAllChats(ExteraChatLock.lockedCount))
     entries.append(.lockedChatsFooter(ExteraChatLock.biometryName))
+
+    entries.append(.voiceHeader)
+    entries.append(.localTranscription(ExteraSettings.localVoiceTranscription))
+    entries.append(.voiceFooter)
+
+    entries.append(.screenHeader)
+    entries.append(.hideOnScreenCapture(ExteraSettings.hideOnScreenCapture))
+    entries.append(.hideInAppSwitcher(ExteraSettings.hideInAppSwitcher))
+    entries.append(.screenFooter)
 
     return entries
 }
@@ -215,6 +282,18 @@ public func exteraGramSettingsController(context: AccountContext) -> ViewControl
                     refresh()
                 }
             })
+        },
+        updateLocalTranscription: { value in
+            ExteraSettings.localVoiceTranscription = value
+            refresh()
+        },
+        updateHideOnScreenCapture: { value in
+            ExteraSettings.hideOnScreenCapture = value
+            refresh()
+        },
+        updateHideInAppSwitcher: { value in
+            ExteraSettings.hideInAppSwitcher = value
+            refresh()
         }
     )
 

@@ -413,6 +413,8 @@ private func extractAccountManagerState(records: AccountRecordsView<TelegramAcco
         }
         self.window = window
         self.nativeWindow = window
+        // exteraGram: hide content during screen recording and in the App Switcher
+        ExteraScreenGuard.shared.install(window: window)
         
         hostView.containerView.layer.addSublayer(MetalEngine.shared.rootLayer)
         

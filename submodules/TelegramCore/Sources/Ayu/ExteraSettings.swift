@@ -45,6 +45,26 @@ public final class ExteraSettings {
         get { return self.bool("showIdAndDc", false) }
         set { self.set(newValue, "showIdAndDc") }
     }
+
+    // MARK: Screen privacy (iOS only)
+
+    public static var hideOnScreenCapture: Bool {
+        get { return self.bool("hideOnScreenCapture", true) }
+        set { self.set(newValue, "hideOnScreenCapture") }
+    }
+
+    public static var hideInAppSwitcher: Bool {
+        get { return self.bool("hideInAppSwitcher", false) }
+        set { self.set(newValue, "hideInAppSwitcher") }
+    }
+
+    // MARK: Voice messages (iOS only)
+
+    // Free on-device transcription with Apple's Speech framework instead of Telegram Premium's server one.
+    public static var localVoiceTranscription: Bool {
+        get { return self.bool("localVoiceTranscription", true) }
+        set { self.set(newValue, "localVoiceTranscription") }
+    }
 }
 
 // Peer id the way bots and other clients show it: users as is, basic groups with "-", channels with "-100".
